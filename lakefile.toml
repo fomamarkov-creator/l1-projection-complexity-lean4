@@ -1,0 +1,16 @@
+name = "MarkovL1Complexity"
+version = "0.1.0"
+keywords = ["math", "lean4", "complexity", "banach-spaces", "3sat"]
+defaultTargets = ["MarkovL1Complexity"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.37.0-rc1"
+
+[[lean_lib]]
+name = "MarkovL1Complexity"
