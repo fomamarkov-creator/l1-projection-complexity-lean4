@@ -1,7 +1,7 @@
 name = "MarkovL1Complexity"
 version = "0.1.0"
-keywords = ["math", "lean4", "complexity", "banach-spaces", "3sat"]
-defaultTargets = ["MarkovL1Complexity"]
+keywords = ["math", "lean4", "complexity", "banach-spaces", "3sat", "verified-solver"]
+defaultTargets = ["MarkovL1Complexity", "MarkovL1Solver"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -14,3 +14,6 @@ rev = "v4.37.0-rc1"
 
 [[lean_lib]]
 name = "MarkovL1Complexity"
+
+[[lean_lib]]
+name = "MarkovL1Solver"
