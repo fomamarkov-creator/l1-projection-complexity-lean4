@@ -32,15 +32,6 @@ projections in finite-dimensional $\ell_1^m$ spaces:
    superincreasing barrier ($a_i = 2^i$) separating all $2^m$ hypercube vertices.
 -/
 
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Fintype.Fin
-import Mathlib.Data.Int.Basic
-import Mathlib.Tactic.Linarith
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic.NormNum
-import Mathlib.Data.Fintype.Sum
-import Mathlib.Data.Fintype.Prod
 
 
 open Finset BigOperators
