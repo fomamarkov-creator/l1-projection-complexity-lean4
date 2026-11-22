@@ -3,9 +3,8 @@
 
 # Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers (Lean 4)
 
-[![Lean 4](https://shields.io)](https://lean-lang.org)
-[![Sorry count](https://shields.io)](#verification-audit)
-[![License: AGPL v3](https://shields.io)](https://gnu.org)
+**Toolchain:** Lean v4.37.0-rc1 | **Sorry count:** 0 |
+**License:** AGPL-3.0 |
 
 **Author:** E. S. Markov (ORCID: [0009-0005-2235-5464](https://orcid.org))
 
