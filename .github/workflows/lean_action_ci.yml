@@ -11,14 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: leanprover/lean-action@v1
-        with:
-          auto-config: false
-          build: false
-          test: false
-          lint: false
-      - name: Update manifest, get Mathlib cache, and build
+      - name: Install elan, update manifest, and build
         run: |
+          curl -sSfL https://lean-lang.org -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          export PATH="$HOME/.elan/bin:$PATH"
           lake update
           lake exe cache get || true
           lake build
+          
