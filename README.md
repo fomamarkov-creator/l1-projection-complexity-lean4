@@ -1,3 +1,5 @@
+![Lean Action CI](https://github.com)
+
 # Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers (Lean 4)
 
 [![Lean 4](https://shields.io)](https://lean-lang.org)
