@@ -13,5 +13,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
         with:
-          lake-update: true
-          
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+      - name: Update manifest, get Mathlib cache, and build
+        run: |
+          lake update
+          lake exe cache get || true
+          lake build
