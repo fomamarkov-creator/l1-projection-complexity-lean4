@@ -1,3 +1,27 @@
+/-!
+# Combinatorial Complexity Phase Transitions of ℓ₁ Metric Projection Null Layers
+
+* **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **Repository:** https://github.com
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
+* **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
+
+## Overview
+Formal machine-checked verification (1,268+ lines, 21 verified theorems, `0 sorry`s) of the
+computational complexity dichotomy for null layers $P_V^{-1}(0)$ of multivalued metric
+projections in finite-dimensional $\ell_1^m$ spaces:
+1. **Bipolar Orthogonality Duality:** Exact characterization of bipolar vectors $u \in \{-1, 1\}^m$
+   in $P_V^{-1}(0)$ via Euclidean orthogonality to subspace generators.
+2. **Universal NP-Completeness:** Polynomial-time many-one reductions from `Subset-Sum`,
+   `Partition`, and general `3-SAT` (`sat3_satisfiable_iff_zero_layer`).
+3. **Polynomial-Time Tractability:** Blockwise median decomposition and $O(m)$ dipole-pair
+   selectors when basis supports are pairwise disjoint ($\Delta = 1$).
+4. **Structural Barriers:** Antitonicity and strict layer expansion ($P_{\mathbb{R}^m}^{-1}(0) = \{0\} \subsetneq P_{\mathrm{span}\{a\}}^{-1}(0)$),
+   sign-propagation rigidity on overlapping dipole chains ($\Delta = 2$), and the exponential
+   superincreasing barrier ($a_i = 2^i$) separating all $2^m$ hypercube vertices.
+-/
+
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Basic.Real.Basic
 import Mathlib.Data.Fintype.Fin
