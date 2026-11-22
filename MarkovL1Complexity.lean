@@ -1,3 +1,13 @@
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.Fintype.Fin
+import Mathlib.Data.Int.Basic
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import Mathlib.Tactic.NormNum
+import Mathlib.Data.Fintype.Sum
+import Mathlib.Data.Fintype.Prod
+
 /-!
 # Combinatorial Complexity Phase Transitions of ℓ₁ Metric Projection Null Layers
 
@@ -23,7 +33,7 @@ projections in finite-dimensional $\ell_1^m$ spaces:
 -/
 
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Basic.Real.Basic
+import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.Fin
 import Mathlib.Data.Int.Basic
 import Mathlib.Tactic.Linarith
