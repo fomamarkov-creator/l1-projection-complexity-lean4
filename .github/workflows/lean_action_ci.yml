@@ -11,13 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install elan, update manifest, and build
-        run: |
-          curl -sSfL https://lean-lang.org -o elan-init.sh
-          sh elan-init.sh -y --default-toolchain none
-          rm elan-init.sh
-          export PATH="$HOME/.elan/bin:$PATH"
-          lake update
-          lake exe cache get || true
-          lake build
-          
+      - uses: leanprover/lean-action@v1
+      
