@@ -11,11 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install elan, update manifest, and build
+      - name: Install elan
         run: |
-          curl -sSf https://lean-lang.org | sh -s -- -y --default-toolchain none
-          source "$HOME/.elan/env"
-          lake update
-          lake exe cache get
-          lake build
-          
+          curl -sSfL https://githubusercontent.com -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      - name: Generate lake-manifest.json if missing
+        run: |
+          if [ ! -f lake-manifest.json ]; then
+            lake update
+          fi
+      - uses: leanprover/lean-action@v1
