@@ -1,4 +1,5 @@
-![Lean Action CI](https://github.com)
+[![Lean Action CI](../../actions/workflows/lean_action_ci.yml/badge.svg)](../../actions/workflows/lean_action_ci.yml)
+
 
 # Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers (Lean 4)
 
