@@ -2,11 +2,13 @@ import MarkovL1Complexity
 import MarkovL1Solver
 import MarkovL1WeightedSolver
 import MarkovL1Tactic
+import MarkovL1Quantizer
 import MarkovL1TernaryQuantizer
 
 open MarkovL1Complexity
 open MarkovL1Solver
 open MarkovL1WeightedSolver
+open MarkovL1TernaryQuantizer
 
 /-- Разбор списка рациональных чисел (целых или дробей вида `a/b`) из строки -/
 def parseRatToken (s : String) : Option ℚ :=
@@ -33,7 +35,7 @@ def printHelp : IO Unit := do
   IO.println "Example:"
   IO.println "  l1solver --dipole 10,4,-6,2"
 
-/-- Запуск встроенных сертифицированных тестов по всем 4 модулям -/
+/-- Запуск встроенных сертифицированных тестов по всем модулям -/
 def runDemo : IO Unit := do
   IO.println "=== Certified Dipole Solver (Δ = 1, O(m) exact rationals) ==="
   match solveDipoleBlockProjection exampleDipoleCfg exampleInput with
@@ -63,6 +65,11 @@ def runDemo : IO Unit := do
   IO.println "\n=== Multidimensional Bipolar Certificate Checker (MultiSpan) ==="
   let valid := checkBipolarZeroLayerQ exampleMatrix exampleCert
   IO.println s!"  u = (1, -1, 1, -1) ∈ P_(MultiSpan A)⁻¹(0) : {valid}"
+
+  IO.println "\n=== Certified 1.58-Bit Ternary Quantizer (θ*, α* over ℚ) ==="
+  let (θ_star, α_star) := quantizeTernaryExactQ [1/10, -1/10, 4, -4, 4, 20]
+  IO.println s!"  Input block      = [1/10, -1/10, 4, -4, 4, 20]"
+  IO.println s!"  Optimal (θ*, α*) = ({θ_star}, {α_star})"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
