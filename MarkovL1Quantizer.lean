@@ -120,9 +120,101 @@ theorem quantizeBipolarBlockwiseQ_certified_optimal {m k : ℕ}
       simpa [List.filter_filter, Bool.and_comm] using h_pos_len
     rw [length_filter_finRange_eq_card, length_filter_finRange_eq_card] at h2
     convert h2 using 2 <;> (ext i; simp [embedQ])
-### Release v1.1.0
+-- =========================================================================
+-- 3. СРАВНИТЕЛЬНЫЕ ЭКСПЕРИМЕНТЫ (BENCHMARKS: MEAN-ABS VS GLOBAL VS GROUP Δ=1)
+-- =========================================================================
 
-Adds the certified 1-bit / bipolar neural network weight quantizer (`MarkovL1Quantizer.lean`) and exact-rational comparative benchmarks (`Mean-Abs` vs `Global Median` vs `Certified Group Median Δ = 1`) on top of the `v1.0.0` formal verification and solver stack.
+/-- Вспомогательная вычислимая сумма рационального вектора по списку индексов -/
+def sumQ {m : ℕ} (f : Fin m → ℚ) : ℚ :=
+  ((List.finRange m).map f).foldl (· + ·) 0
 
-#### New in v1.1.0
-* **`MarkovL1Quantizer.lean`**: Computable group-wise 1-bit quantizer over $\mathbb{Q}$ without `Classical.choice`, accompanied by the formal global $\ell_1$-optimality theorem `quantizeBipolarBlockwiseQ_certified_optimal` and reproducible `#eval` benchmarks across multi-channel and outlier layers.
+/-- Ошибка ℓ₁ при стандартном глобальном масштабе по среднему модулю (Mean-Abs) -/
+def meanAbsQuantErrorQ {m : ℕ} (hm : 0 < m) (w : Fin m → ℚ) : ℚ :=
+  let totalAbs : ℚ := sumQ (fun i => absQ (w i))
+  let alphaMean : ℚ := totalAbs / (m : ℚ)
+  sumQ (fun i => absQ (w i - alphaMean * bipolarSignQ (w i)))
+
+/-- Ошибка ℓ₁ при глобальном медианном масштабе (один блок k = 1) -/
+def globalMedianQuantErrorQ {m : ℕ} (w : Fin m → ℚ) : ℚ :=
+  let allSupp : Fin m → Bool := fun _ => true
+  let alphaGlob : ℚ := computeGroupScaleQ allSupp w
+  sumQ (fun i => absQ (w i - alphaGlob * bipolarSignQ (w i)))
+
+/-- Универсальный запуск сравнения трёх методов на слое `w` с разбиением `supp` -/
+def runQuantBenchmark {m k : ℕ} (hm : 0 < m) (name : String)
+    (supp : Fin k → Fin m → Bool) (w : Fin m → ℚ) : String :=
+  let orig : ℚ := sumQ (fun i => absQ (w i))
+  let errMean : ℚ := meanAbsQuantErrorQ hm w
+  let errGlob : ℚ := globalMedianQuantErrorQ w
+  match quantizeBipolarBlockwiseQ supp w with
+  | some out =>
+      let errGroup : ℚ := sumQ (fun i => absQ (out.error i))
+      let cert : Bool := checkBlocksBalancedQ supp (signAlignedErrorQ out)
+      s!"[{name}] orig_L1={orig} | MeanAbs_err={errMean} | GlobalMed_err={errGlob} | " ++
+      s!"GroupDelta1_err={errGroup} (certified_optimal={cert})"
+  | none => s!"[{name}] Invalid block partition"
+
+section ExperimentalBenchmarks
+
+/-- Тестовый слой A (m=8, k=2): Двухканальный слой с разными масштабами каналов -/
+def layerGroupsSupp : Fin 2 → Fin 8 → Bool
+  | ⟨0, _⟩, i => decide (i.val < 4)
+  | ⟨1, _⟩, i => decide (4 ≤ i.val)
+
+def layerWeightsQ : Fin 8 → ℚ
+  | ⟨0, _⟩ => -3 / 2
+  | ⟨1, _⟩ => 1 / 2
+  | ⟨2, _⟩ => -1 / 2
+  | ⟨3, _⟩ => 5 / 2
+  | ⟨4, _⟩ => 4
+  | ⟨5, _⟩ => -1
+  | ⟨6, _⟩ => -4
+  | ⟨7, _⟩ => 10
+
+#eval runQuantBenchmark (by omega) "Layer A (m=8, k=2, balanced)" layerGroupsSupp layerWeightsQ
+
+/-- Тестовый слой B (m=8, k=2): Слой с сильным выбросом веса (w_7 = 50) -/
+def layerOutlierQ : Fin 8 → ℚ
+  | ⟨0, _⟩ => -3 / 2
+  | ⟨1, _⟩ => 1 / 2
+  | ⟨2, _⟩ => -1 / 2
+  | ⟨3, _⟩ => 5 / 2
+  | ⟨4, _⟩ => 4
+  | ⟨5, _⟩ => -1
+  | ⟨6, _⟩ => -4
+  | ⟨7, _⟩ => 50
+
+#eval runQuantBenchmark (by omega) "Layer B (m=8, k=2, outlier=50)" layerGroupsSupp layerOutlierQ
+
+/-- Тестовый слой C (m=12, k=3): Трёхканальный свёрточный блок (3 канала по 4 веса) -/
+def conv3GroupsSupp : Fin 3 → Fin 12 → Bool
+  | ⟨0, _⟩, i => decide (i.val < 4)
+  | ⟨1, _⟩, i => decide (4 ≤ i.val && i.val < 8)
+  | ⟨2, _⟩, i => decide (8 ≤ i.val)
+
+def conv3WeightsQ : Fin 12 → ℚ
+  | ⟨0, _⟩ => 1 / 4
+  | ⟨1, _⟩ => -1 / 4
+  | ⟨2, _⟩ => 1 / 2
+  | ⟨3, _⟩ => -1 / 2
+  | ⟨4, _⟩ => 2
+  | ⟨5, _⟩ => -2
+  | ⟨6, _⟩ => 3
+  | ⟨7, _⟩ => -3
+  | ⟨8, _⟩ => 8
+  | ⟨9, _⟩ => -8
+  | ⟨10, _⟩ => 10
+  | ⟨11, _⟩ => -12
+
+#eval runQuantBenchmark (by omega) "Layer C (m=12, k=3, multi-scale)" conv3GroupsSupp conv3WeightsQ
+
+end ExperimentalBenchmarks
+
+end MarkovL1Quantizer
+
+-- Проверка отсутствия Classical.choice в вычислимом 1-bit квантователе:
+#print axioms MarkovL1Quantizer.computeGroupScaleQ
+#print axioms MarkovL1Quantizer.quantizeBipolarBlockwiseQ
+
+-- Проверка аксиоматической чистоты теоремы глобальной оптимальности:
+#print axioms MarkovL1Quantizer.quantizeBipolarBlockwiseQ_certified_optimal
