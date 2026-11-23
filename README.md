@@ -1,10 +1,10 @@
-[![Lean Action CI](../../actions/workflows/lean_action_ci.yml/badge.svg)](../../actions/workflows/lean_action_ci.yml)
+[![Lean CI](../../actions/workflows/lean_action_ci.yml/badge.svg)](../../actions/workflows/lean_action_ci.yml)
 
-**Toolchain:** Lean `v4.37.0-rc1` | **Verified Theorems:** 28 | **Sorry count:** 0 | **License:** AGPL-3.0
+**Lean Version:** `v4.37.0-rc1` | **Mathlib:** `v4.37.0-rc1` | **License:** AGPL-3.0
 
-# Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers
+# Formal Verification of \(\ell_1\) Metric Projection Complexity, Exact-Rational Solvers, and 1.58-Bit Ternary Quantization in Lean 4
 
-Machine-checked formal verification, certified rational solvers, proof-by-reflection tactics, a certified 1-bit neural network quantizer, and a native CLI executable in **Lean 4** characterizing the computational complexity dichotomy of null layers $P_V^{-1}(0)$ of multivalued metric projections in finite-dimensional $\ell_1^m$ spaces.
+Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) complexity phase transitions for \(\ell_1\) metric projection null layers, constructive exact-rational (\(\mathbb{Q}\)) solvers without `Classical.choice`, proof-by-reflection tactics, and certified 1-bit / 1.58-bit neural network quantizers.
 
 * **Author:** E. S. Markov (ORCID: `0009-0005-2235-5464`)
 * **Affiliation:** Independent Researcher, Astrakhan, Russia
@@ -12,46 +12,32 @@ Machine-checked formal verification, certified rational solvers, proof-by-reflec
 
 ---
 
-## Repository Architecture
+## Verified Modules (6 Core Libraries + Standalone CLI)
 
-1. **`MarkovL1Complexity.lean`** *(Core Mathematical Theory — 21 verified theorems, `0 sorry`s)*
-   * **Bipolar Orthogonality Duality:** Exact characterization of bipolar vectors $u \in \{-1, 1\}^m$ in $P_V^{-1}(0)$ via Euclidean orthogonality.
-   * **Universal NP-Completeness:** Polynomial-time many-one reductions from `Subset-Sum`, `Partition`, and general `3-SAT`.
-   * **Polynomial-Time Tractability ($\Delta = 1$):** Blockwise median decomposition and $O(m)$ dipole-pair selectors for disjoint supports.
-   * **Phase-Transition Barriers:** Strict layer expansion, sign-propagation rigidity at $\Delta = 2$, and the exponential superincreasing barrier $a_i = 2^i$.
-
-2. **`MarkovL1Solver.lean`** *(Certified Dipole Solver & Multidimensional Verifier over $\mathbb{Q}$)*
-   * Constructive $O(m)$ solver for decoupled dipole blocks and polynomial-time certificate checker for `MultiSpan` systems with formal soundness proofs.
-
-3. **`MarkovL1WeightedSolver.lean`** *(Certified General Block-Median Solver over $\mathbb{Q}$)*
-   * Exact $O(|B_b| \log |B_b|)$ merge-sort median solver for disjoint blocks of arbitrary sizes with formal subgradient balance proofs.
-
-4. **`MarkovL1Tactic.lean`** *(Proof-by-Reflection Automation)*
-   * Custom Lean 4 tactics (`l1_zero_layer`, `l1_bipolar_cert`, `l1_block_cert`) discharging multidimensional and blockwise $\ell_1$ null-layer goals in one line.
-
-5. **`MarkovL1Quantizer.lean`** *(Certified 1-Bit / Bipolar Neural Network Quantizer)*
-   * Exact rational group-wise 1-bit quantizer ($\alpha_b^* = \mathrm{median}(|w|_{S_b})$) with formal global $\ell_1$-optimality proof and reproducible `#eval` benchmarks:
-
-| Test Layer | Original $\|w\|_1$ | Mean-Abs (XNOR-Net) | Global Median ($k=1$) | **Certified Group ($\Delta = 1$)** |
-| :--- | :---: | :---: | :---: | :---: |
-| **Layer A** ($m=8, k=2$, balanced) | $24$ | $18$ | $17$ | **$12$** (`optimal = true`) |
-| **Layer B** ($m=8, k=2$, outlier $50$) | $64$ | $84$ | $57$ | **$52$** (`optimal = true`) |
-| **Layer C** ($m=12, k=3$, multi-scale) | $99/2$ | $43$ | $77/2$ | **$17/2$** (`optimal = true`) |
-
-6. **`Main.lean` (`l1solver`)** *(Standalone Native CLI Executable)*
-   * Compiled command-line tool executing certified $\ell_1$ projections over exact rationals $\mathbb{Q}$.
+1. **`MarkovL1Complexity.lean`:**
+   * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
+2. **`MarkovL1Solver.lean`:**
+   * Constructive, `Classical.choice`-free exact-rational (\(\mathbb{Q}\)) dipole block projection solver (`solveDipoleBlockProjection`) with \(O(m)\) runtime and overlap rejection.
+3. **`MarkovL1WeightedSolver.lean`:**
+   * General arbitrary-size decoupled block median solver (`solveGeneralBlockProjection`) and subgradient sign-balance certificate checker (`checkBlocksBalancedQ`).
+4. **`MarkovL1Tactic.lean`:**
+   * Proof-by-reflection tactic `l1_zero_layer` and multidimensional `MultiSpan` bipolar certificate verifier (`checkBipolarZeroLayerQ`).
+5. **`MarkovL1Quantizer.lean`:**
+   * Certified group-wise 1-bit bipolar neural network quantizer (`quantizeBipolarBlockwiseQ`) proving global \(\ell_1\)-optimality of blockwise median scales \(\alpha_b^* = \mathrm{median}(\vert{}w_i\vert{}_{i \in S_b})\).
+6. **`MarkovL1TernaryQuantizer.lean` *(New)*:**
+   * Formalizes sparse **1.58-bit ternary quantization** (`{-1, 0, +1}`) with zero-zone thresholding \(\theta \ge 0\):
+     * `pointErrorQ_eq_split`: exact decomposition of ternary \(\ell_1\) error into pruned tail and active residual.
+     * `blockErrorQ_const_on_gap`: proves error invariance between order statistics, reducing continuous non-convex optimization over \(\theta \in [0, \infty)\) to a finite polynomial-time search over critical thresholds \(\{0\} \cup \{\vert{}w_i\vert{}\}\).
+     * `quantizeTernaryExactQ_certified_optimal`: machine-checked optimality certificate over exact rationals \(\mathbb{Q}\).
+7. **`Main.lean` \(\to\) `l1solver`:**
+   * Standalone native executable running all certified benchmarks (`--demo`) and interactive exact-rational queries (`--dipole`).
 
 ---
 
-## Local Build & Running the CLI Solver
+## Build & Run
 
 ```bash
 lake exe cache get
 lake build
-
-# Run built-in certified benchmarks
 lake exe l1solver --demo
-
-# Solve a custom decoupled dipole instance over exact rationals
-lake exe l1solver --dipole 10,4,-6,2
 ```
