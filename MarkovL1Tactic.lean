@@ -59,17 +59,17 @@ theorem mem_disjoint_zero_layer_of_checkBlocksBalancedQ {m k : ℕ}
 /-- Специализированная тактика для многомерных систем `MultiSpan`:
     автоматически доказывает принадлежность биполярного вектора нулевому слою -/
 macro "l1_bipolar_cert" : tactic =>
-  `(tactic| (apply checkBipolarZeroLayerQ_sound; decide))
+  `(tactic| (apply checkBipolarZeroLayerQ_sound; native_decide))
 
 /-- Специализированная тактика для развязанных блочных подпространств (`Δ = 1`):
-    автоматически проверяет сбалансированность всех блоков через ядро `decide` -/
+    автоматически проверяет сбалансированность всех блоков через компилируемую рефлексию -/
 macro "l1_block_cert" : tactic =>
-  `(tactic| (apply mem_disjoint_zero_layer_of_checkBlocksBalancedQ; decide))
+  `(tactic| (apply mem_disjoint_zero_layer_of_checkBlocksBalancedQ; native_decide))
 
-/-- Универсальная тактика `l1_zero_layer`: автоматически пробует закрыть цель
-    либо через биполярную ортогональность (`MultiSpan`), либо через блочный баланс (`Δ = 1`) -/
+/-- Универсальная тактика `l1_zero_layer`: автоматически выбирает подходящий сертификат
+    и закрывает цель целиком через `solve` -/
 macro "l1_zero_layer" : tactic =>
-  `(tactic| first | l1_bipolar_cert | l1_block_cert)
+  `(tactic| solve | l1_bipolar_cert | l1_block_cert)
 
 -- =========================================================================
 -- ДЕМОНСТРАЦИОННЫЕ ТЕОРЕМЫ (ДОКАЗЫВАЮТСЯ В ОДНУ СТРОЧКУ `by l1_zero_layer`)
