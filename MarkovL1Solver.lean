@@ -117,12 +117,16 @@ theorem solveDipoleBlockProjection_mem_subspace {m k : ℕ} (cfg : DipoleConfig 
   dsimp [solveDipoleBlockProjection] at h_some
   split_ifs at h_some with h_val
   injection h_some with h_eq
-  subst h_eq
   dsimp [DipoleConfig.isValid] at h_val
   rw [Bool.and_eq_true] at h_val
-  refine ⟨h_val.2, fun b => (out.coeffs b : ℝ), ?_⟩
+  refine ⟨h_val.2, fun b => ((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 : ℝ), ?_⟩
+  have h_proj_def : out.projection = fun i =>
+      ∑ b : Fin k, if cfg.supp b i then (x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 else 0 := by
+    rw [← h_eq]
   ext i
-  dsimp [embedQ, DisjointBlockSubspace.eval, buildDisjointSubspace, out]
+  dsimp [embedQ, DisjointBlockSubspace.eval, buildDisjointSubspace]
+  rw [h_proj_def]
+  dsimp only
   push_cast
   refine Finset.sum_congr rfl fun b _ => ?_
   split_ifs <;> simp
@@ -218,7 +222,7 @@ theorem checkBipolarZeroLayerQ_sound {m r : ℕ} (A : Fin r → Fin m → ℚ) (
     have hj := h_orth_all j (List.mem_finRange j)
     rw [decide_eq_true_eq] at hj
     have h_cast : (((∑ i : Fin m, A j i * u i : ℚ) : ℝ)) = 0 := by
-      rw [hj, Rat.cast_zero]
+      rw [hj]; simp
     dsimp [embedQ]
     push_cast at h_cast
     exact h_cast
@@ -228,8 +232,8 @@ theorem checkBipolarZeroLayerQ_sound {m r : ℕ} (A : Fin r → Fin m → ℚ) (
     simp only [decide_eq_true_eq, Bool.or_eq_true] at hi
     dsimp [embedQ]
     rcases hi with h1 | hm1
-    · left; rw [h1, Rat.cast_one]
-    · right; rw [hm1, Rat.cast_neg, Rat.cast_one]
+    · left; rw [h1]; simp
+    · right; rw [hm1]; simp
 
 -- =========================================================================
 -- 5. ИСПОЛНЯЕМЫЕ ТЕСТЫ (#eval) — ЗАПУСКАЮТСЯ ПРИ СБОРКЕ ПРОЕКТА
