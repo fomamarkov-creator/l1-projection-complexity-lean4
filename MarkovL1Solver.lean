@@ -140,6 +140,8 @@ theorem solveDipoleBlockProjection_mem_subspace {m k : ℕ} (cfg : DipoleConfig 
     refine Finset.sum_congr rfl fun b _ => ?_
     split_ifs <;> simp
   rw [congrArg (fun q : ℚ => (q : ℝ)) h_eq_q, h_cast_r]
+  refine Finset.sum_congr rfl fun b _ => ?_
+  split_ifs <;> simp
 
 /-- Теорема 2 (Главная теорема корректности солвера):
     Если `solveDipoleBlockProjection cfg x = some out`, то вещественный вектор остатка
