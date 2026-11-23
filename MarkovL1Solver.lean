@@ -127,9 +127,19 @@ theorem solveDipoleBlockProjection_mem_subspace {m k : ℕ} (cfg : DipoleConfig 
   dsimp [embedQ, DisjointBlockSubspace.eval, buildDisjointSubspace]
   rw [h_proj_def]
   dsimp only
-  simp only [Rat.cast_sum, Rat.cast_ite, Rat.cast_zero]
-  refine Finset.sum_congr rfl fun b _ => ?_
-  split_ifs <;> rfl
+  have h_eq_q : (∑ b : Fin k, if cfg.supp b i then (x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 else 0) =
+      ∑ b : Fin k, (if cfg.supp b i = true then (1 : ℚ) else 0) *
+        ((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2) := by
+    refine Finset.sum_congr rfl fun b _ => ?_
+    split_ifs <;> simp
+  have h_cast_r : (((∑ b : Fin k, (if cfg.supp b i = true then (1 : ℚ) else 0) *
+      ((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2) : ℚ) : ℝ)) =
+      ∑ b : Fin k, (if cfg.supp b i = true then (1 : ℝ) else 0) *
+        (((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 : ℚ) : ℝ) := by
+    norm_cast
+    refine Finset.sum_congr rfl fun b _ => ?_
+    split_ifs <;> simp
+  rw [congrArg (fun q : ℚ => (q : ℝ)) h_eq_q, h_cast_r]
 
 /-- Теорема 2 (Главная теорема корректности солвера):
     Если `solveDipoleBlockProjection cfg x = some out`, то вещественный вектор остатка
@@ -221,18 +231,16 @@ theorem checkBipolarZeroLayerQ_sound {m r : ℕ} (A : Fin r → Fin m → ℚ) (
     rw [List.all_eq_true] at h_orth_all
     have hj := h_orth_all j (List.mem_finRange j)
     rw [decide_eq_true_eq] at hj
-    have h_cast : (((∑ i : Fin m, A j i * u i : ℚ) : ℝ)) = 0 := by
-      rw [hj]; simp
     dsimp [embedQ]
-    simpa only [Rat.cast_sum, Rat.cast_mul] using h_cast
+    exact_mod_cast hj
   · intro i
     rw [List.all_eq_true] at h_bip_all
     have hi := h_bip_all i (List.mem_finRange i)
     simp only [decide_eq_true_eq, Bool.or_eq_true] at hi
     dsimp [embedQ]
     rcases hi with h1 | hm1
-    · left; rw [h1]; simp
-    · right; rw [hm1]; simp
+    · left; exact_mod_cast h1
+    · right; exact_mod_cast hm1
 
 -- =========================================================================
 -- 5. ИСПОЛНЯЕМЫЕ ТЕСТЫ (#eval) — ЗАПУСКАЮТСЯ ПРИ СБОРКЕ ПРОЕКТА
