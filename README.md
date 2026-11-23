@@ -30,7 +30,13 @@ Machine-checked formal verification, certified rational solvers, proof-by-reflec
    * Custom Lean 4 tactics (`l1_zero_layer`, `l1_bipolar_cert`, `l1_block_cert`) discharging multidimensional and blockwise $\ell_1$ null-layer goals in one line.
 
 5. **`MarkovL1Quantizer.lean`** *(Certified 1-Bit / Bipolar Neural Network Quantizer)*
-   * Exact rational group-wise 1-bit quantizer ($\alpha_b^* = \mathrm{median}(|w|_{S_b})$) with formal $\ell_1$-optimality proof and comparative benchmarks (`MeanAbs` vs `GlobalMed` vs `Group Δ=1`).
+   * Exact rational group-wise 1-bit quantizer ($\alpha_b^* = \mathrm{median}(|w|_{S_b})$) with formal global $\ell_1$-optimality proof and reproducible `#eval` benchmarks:
+
+| Test Layer | Original $\|w\|_1$ | Mean-Abs (XNOR-Net) | Global Median ($k=1$) | **Certified Group ($\Delta = 1$)** |
+| :--- | :---: | :---: | :---: | :---: |
+| **Layer A** ($m=8, k=2$, balanced) | $24$ | $18$ | $17$ | **$12$** (`optimal = true`) |
+| **Layer B** ($m=8, k=2$, outlier $50$) | $64$ | $84$ | $57$ | **$52$** (`optimal = true`) |
+| **Layer C** ($m=12, k=3$, multi-scale) | $99/2$ | $43$ | $77/2$ | **$17/2$** (`optimal = true`) |
 
 6. **`Main.lean` (`l1solver`)** *(Standalone Native CLI Executable)*
    * Compiled command-line tool executing certified $\ell_1$ projections over exact rationals $\mathbb{Q}$.
