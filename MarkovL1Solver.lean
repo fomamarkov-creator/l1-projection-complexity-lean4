@@ -106,6 +106,16 @@ def embedQ {m : ℕ} (x : Fin m → ℚ) : Fin m → ℝ :=
 -- 3. ТЕОРЕМЫ ФОРМАЛЬНОЙ КОРРЕКТНОСТИ СОЛВЕРА (SOUNDNESS)
 -- =========================================================================
 
+/-- Вспомогательная лемма: приведение конечной суммы из ℚ в ℝ без дополнительных импортов -/
+lemma rat_cast_sum {α : Type*} (s : Finset α) (f : α → ℚ) :
+    (((∑ a ∈ s, f a : ℚ) : ℝ)) = ∑ a ∈ s, (f a : ℝ) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp
+  | @insert a s ha ih =>
+      rw [Finset.sum_insert ha, Finset.sum_insert ha, ← ih]
+      exact Rat.cast_add (f a) (∑ x ∈ s, f x)
+
 /-- Теорема 1 (Принадлежность проекции подпространству):
     Если солвер вернул выход `out`, то вектор `embedQ out.projection` гарантированно
     принадлежит подпространству `B.mem` -/
@@ -127,21 +137,11 @@ theorem solveDipoleBlockProjection_mem_subspace {m k : ℕ} (cfg : DipoleConfig 
   dsimp [embedQ, DisjointBlockSubspace.eval, buildDisjointSubspace]
   rw [h_proj_def]
   dsimp only
-  have h_eq_q : (∑ b : Fin k, if cfg.supp b i then (x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 else 0) =
-      ∑ b : Fin k, (if cfg.supp b i = true then (1 : ℚ) else 0) *
-        ((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2) := by
-    refine Finset.sum_congr rfl fun b _ => ?_
-    split_ifs <;> simp
-  have h_cast_r : (((∑ b : Fin k, (if cfg.supp b i = true then (1 : ℚ) else 0) *
-      ((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2) : ℚ) : ℝ)) =
-      ∑ b : Fin k, (if cfg.supp b i = true then (1 : ℝ) else 0) *
-        (((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 : ℚ) : ℝ) := by
-    norm_cast
-    refine Finset.sum_congr rfl fun b _ => ?_
-    split_ifs <;> simp
-  rw [congrArg (fun q : ℚ => (q : ℝ)) h_eq_q, h_cast_r]
+  rw [rat_cast_sum]
   refine Finset.sum_congr rfl fun b _ => ?_
-  split_ifs <;> simp
+  by_cases hs : cfg.supp b i = true
+  · simp [hs]
+  · simp [hs]
 
 /-- Теорема 2 (Главная теорема корректности солвера):
     Если `solveDipoleBlockProjection cfg x = some out`, то вещественный вектор остатка
@@ -234,15 +234,19 @@ theorem checkBipolarZeroLayerQ_sound {m r : ℕ} (A : Fin r → Fin m → ℚ) (
     have hj := h_orth_all j (List.mem_finRange j)
     rw [decide_eq_true_eq] at hj
     dsimp [embedQ]
-    exact_mod_cast hj
+    have h1 : (((∑ i : Fin m, A j i * u i : ℚ) : ℝ)) = 0 := by rw [hj]; simp
+    rw [rat_cast_sum] at h1
+    refine Eq.trans ?_ h1
+    refine Finset.sum_congr rfl fun i _ => ?_
+    exact (Rat.cast_mul (A j i) (u i)).symm
   · intro i
     rw [List.all_eq_true] at h_bip_all
     have hi := h_bip_all i (List.mem_finRange i)
     simp only [decide_eq_true_eq, Bool.or_eq_true] at hi
     dsimp [embedQ]
     rcases hi with h1 | hm1
-    · left; exact_mod_cast h1
-    · right; exact_mod_cast hm1
+    · left; rw [h1]; simp
+    · right; rw [hm1]; simp
 
 -- =========================================================================
 -- 5. ИСПОЛНЯЕМЫЕ ТЕСТЫ (#eval) — ЗАПУСКАЮТСЯ ПРИ СБОРКЕ ПРОЕКТА
