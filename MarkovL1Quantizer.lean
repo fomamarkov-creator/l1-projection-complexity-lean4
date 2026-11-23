@@ -16,8 +16,8 @@ weight quantization (`w ≈ α_b * s_i`, `s_i ∈ {-1, 1}`, `α_b ∈ ℚ`):
 2. `quantizeBipolarBlockwiseQ`: Computes optimal per-group rational scaling factors
    `α_b* = median(|w_i| : i ∈ S_b)` in `O(|S_b| log |S_b|)` time without `Classical.choice`.
 3. `quantizeBipolarBlockwiseQ_certified_optimal`: Proves that the signed quantization
-   residual `s_i * (w_i - α_b* * s_i)` belongs to the `ℓ₁` null layer `P_B⁻¹(0)`, certifying
-   global `ℓ₁`-optimality of the scaling factors `α_b*` over all real scales `α ∈ ℝ^k`.
+   residual `s_i * (w_i - α_b* * s_i)` belongs to the `ℓ₁` null layer `P_B⁻¹(0)`.
+4. `ExperimentalBenchmarks`: Exact rational comparison against Mean-Abs and Global Median scaling.
 -/
 
 open Finset BigOperators
@@ -68,18 +68,16 @@ def quantizeBipolarBlockwiseQ {m k : ℕ} (supp : Fin k → Fin m → Bool) (w :
 /-- Выравнивание ошибки по биполярному знаку: `alignedErr_i = s_i * (w_i - wHat_i)` -/
 def signAlignedErrorQ {m k : ℕ} (out : QuantizedLayerOutputQ m k) : Fin m → ℚ :=
   fun i => out.signs i * out.error i
+
 -- =========================================================================
 -- 2. ТЕОРЕМА ГЛОБАЛЬНОЙ ℓ₁-ОПТИМАЛЬНОСТИ 1-BIT МАСШТАБОВ КВАНТОВАНИЯ
 -- =========================================================================
 
-/-- Вспомогательная лемма: для биполярного знака `s ∈ {-1, 1}` умножение на `s`
-    сохраняет модуль вещественного числа: `|s * z| = |z|` -/
 lemma abs_bipolar_mul (s z : ℝ) (hs : s = 1 ∨ s = -1) : |s * z| = |z| := by
   rcases hs with h1 | hm1
   · rw [h1, one_mul]
   · rw [hm1, neg_one_mul, abs_neg]
 
-/-- Вспомогательная лемма: `embedQ (bipolarSignQ q)` всегда равен `1` или `-1` -/
 lemma embedQ_bipolarSignQ (q : ℚ) :
     (bipolarSignQ q : ℝ) = 1 ∨ (bipolarSignQ q : ℝ) = -1 := by
   dsimp [bipolarSignQ]
@@ -87,13 +85,6 @@ lemma embedQ_bipolarSignQ (q : ℚ) :
   · left; simp
   · right; simp
 
-/-- Главная теорема оптимальности 1-bit квантования:
-    если `quantizeBipolarBlockwiseQ supp w = some out` и остаток сбалансирован
-    (`checkBlocksBalancedQ supp (signAlignedErrorQ out) = true`), то для ЛЮБЫХ
-    альтернативных вещественных масштабов `β : Fin k → ℝ` при тех же биполярных знаках `s`
-    выполняется:
-    `‖w - wHat‖₁ ≤ ‖w - ∑_b β_b · (S_b ⊙ s)‖₁`!
-    То есть найденные рациональные масштабы `out.scales` глобально оптимальны в ℝ^m. -/
 theorem quantizeBipolarBlockwiseQ_certified_optimal {m k : ℕ}
     (supp : Fin k → Fin m → Bool) (w : Fin m → ℚ) (out : QuantizedLayerOutputQ m k)
     (h_some : quantizeBipolarBlockwiseQ supp w = some out)
@@ -129,125 +120,9 @@ theorem quantizeBipolarBlockwiseQ_certified_optimal {m k : ℕ}
       simpa [List.filter_filter, Bool.and_comm] using h_pos_len
     rw [length_filter_finRange_eq_card, length_filter_finRange_eq_card] at h2
     convert h2 using 2 <;> (ext i; simp [embedQ])
+### Release v1.1.0
 
--- =========================================================================
--- 3. БЕНЧМАРК 1-BIT КВАНТОВАНИЯ СЛОЯ НЕЙРОСЕТИ (#eval)
--- =========================================================================
+Adds the certified 1-bit / bipolar neural network weight quantizer (`MarkovL1Quantizer.lean`) and exact-rational comparative benchmarks (`Mean-Abs` vs `Global Median` vs `Certified Group Median Δ = 1`) on top of the `v1.0.0` formal verification and solver stack.
 
-section NeuralQuantizationBenchmark
-
-/-- Пример: 8 весов полносвязного слоя, разбитых на 2 канала по 4 веса (Δ = 1) -/
-def layerGroupsSupp : Fin 2 → Fin 8 → Bool
-  | ⟨0, _⟩, i => decide (i.val < 4)
-  | ⟨1, _⟩, i => decide (4 ≤ i.val)
-
-/-- Полноразмерные рациональные веса слоя:
-    Канал 0: (-3/2, 1/2, -1/2, 5/2) -> модули (3/2, 1/2, 1/2, 5/2), медиана α₀* = 3/2
-    Канал 1: (4, -1, -4, 10) -> модули (4, 1, 4, 10), медиана α₁* = 4 -/
-def layerWeightsQ : Fin 8 → ℚ
-  | ⟨0, _⟩ => -3 / 2
-  | ⟨1, _⟩ => 1 / 2
-  | ⟨2, _⟩ => -1 / 2
-  | ⟨3, _⟩ => 5 / 2
-  | ⟨4, _⟩ => 4
-  | ⟨5, _⟩ => -1
-  | ⟨6, _⟩ => -4
-  | ⟨7, _⟩ => 10
-
-#eval
-  match quantizeBipolarBlockwiseQ layerGroupsSupp layerWeightsQ with
-  | some out =>
-      let certOk := checkBlocksBalancedQ layerGroupsSupp (signAlignedErrorQ out)
-      let origL1 := ∑ i : Fin 8, absQ (layerWeightsQ i)
-      let quantL1Err := ∑ i : Fin 8, absQ (out.error i)
-      s!"[1-Bit Neural Quantizer OK] scales α* = ({out.scales 0}, {out.scales 1}), " ++
-      s!"certified_optimal = {certOk}, " ++
-      s!"orig_L1_norm = {origL1}, quantized_L1_error = {quantL1Err}, " ++
-      s!"signs = ({out.signs 0}, {out.signs 1}, {out.signs 2}, {out.signs 3}, " ++
-      s!"{out.signs 4}, {out.signs 5}, {out.signs 6}, {out.signs 7})"
-  | none => "Overlapping quantization groups (NP-hard regime Δ ≥ 2)"
-
-end NeuralQuantizationBenchmark
-
--- =========================================================================
--- 4. СРАВНИТЕЛЬНЫЕ ЭКСПЕРИМЕНТЫ (BENCHMARKS: MEAN-ABS VS GLOBAL VS GROUP Δ=1)
--- =========================================================================
-
-namespace MarkovL1Quantizer
-
-/-- Ошибка ℓ₁ при стандартном глобальном масштабе по среднему модулю (Mean-Abs) -/
-def meanAbsQuantErrorQ {m : ℕ} (hm : 0 < m) (w : Fin m → ℚ) : ℚ :=
-  let totalAbs : ℚ := ∑ i : Fin m, absQ (w i)
-  let alphaMean : ℚ := totalAbs / (m : ℚ)
-  ∑ i : Fin m, absQ (w i - alphaMean * bipolarSignQ (w i))
-
-/-- Ошибка ℓ₁ при глобальном медианном масштабе (один блок k = 1) -/
-def globalMedianQuantErrorQ {m : ℕ} (w : Fin m → ℚ) : ℚ :=
-  let allSupp : Fin m → Bool := fun _ => true
-  let alphaGlob : ℚ := computeGroupScaleQ allSupp w
-  ∑ i : Fin m, absQ (w i - alphaGlob * bipolarSignQ (w i))
-
-/-- Универсальный запуск сравнения трёх методов на слое `w` с разбиением `supp` -/
-def runQuantBenchmark {m k : ℕ} (hm : 0 < m) (name : String)
-    (supp : Fin k → Fin m → Bool) (w : Fin m → ℚ) : String :=
-  let orig := ∑ i : Fin m, absQ (w i)
-  let errMean := meanAbsQuantErrorQ hm w
-  let errGlob := globalMedianQuantErrorQ w
-  match quantizeBipolarBlockwiseQ supp w with
-  | some out =>
-      let errGroup := ∑ i : Fin m, absQ (out.error i)
-      let cert := checkBlocksBalancedQ supp (signAlignedErrorQ out)
-      s!"[{name}] orig_L1={orig} | MeanAbs_err={errMean} | GlobalMed_err={errGlob} | " ++
-      s!"GroupDelta1_err={errGroup} (certified_optimal={cert})"
-  | none => s!"[{name}] Invalid block partition"
-
-section ExperimentalBenchmarks
-
-/-- Бенчмарк 1 (Layer A, m=8, k=2): Двухканальный слой с разными масштабами каналов -/
-#eval runQuantBenchmark (by omega) "Layer A (m=8, k=2, balanced)" layerGroupsSupp layerWeightsQ
-
-/-- Бенчмарк 2 (Layer B, m=8, k=2): Слой с сильным выбросом веса (w_7 = 50) -/
-def layerOutlierQ : Fin 8 → ℚ
-  | ⟨0, _⟩ => -3 / 2
-  | ⟨1, _⟩ => 1 / 2
-  | ⟨2, _⟩ => -1 / 2
-  | ⟨3, _⟩ => 5 / 2
-  | ⟨4, _⟩ => 4
-  | ⟨5, _⟩ => -1
-  | ⟨6, _⟩ => -4
-  | ⟨7, _⟩ => 50
-
-#eval runQuantBenchmark (by omega) "Layer B (m=8, k=2, outlier=50)" layerGroupsSupp layerOutlierQ
-
-/-- Бенчмарк 3 (Layer C, m=12, k=3): Трёхканальный свёрточный блок (3 канала по 4 веса) -/
-def conv3GroupsSupp : Fin 3 → Fin 12 → Bool
-  | ⟨0, _⟩, i => decide (i.val < 4)
-  | ⟨1, _⟩, i => decide (4 ≤ i.val && i.val < 8)
-  | ⟨2, _⟩, i => decide (8 ≤ i.val)
-
-def conv3WeightsQ : Fin 12 → ℚ
-  | ⟨0, _⟩ => 1 / 4
-  | ⟨1, _⟩ => -1 / 4
-  | ⟨2, _⟩ => 1 / 2
-  | ⟨3, _⟩ => -1 / 2
-  | ⟨4, _⟩ => 2
-  | ⟨5, _⟩ => -2
-  | ⟨6, _⟩ => 3
-  | ⟨7, _⟩ => -3
-  | ⟨8, _⟩ => 8
-  | ⟨9, _⟩ => -8
-  | ⟨10, _⟩ => 10
-  | ⟨11, _⟩ => -12
-
-#eval runQuantBenchmark (by omega) "Layer C (m=12, k=3, multi-scale)" conv3GroupsSupp conv3WeightsQ
-
-end ExperimentalBenchmarks
-
-end MarkovL1Quantizer
-
--- Проверка отсутствия Classical.choice в вычислимом 1-bit квантователе:
-#print axioms MarkovL1Quantizer.computeGroupScaleQ
-#print axioms MarkovL1Quantizer.quantizeBipolarBlockwiseQ
-
--- Проверка аксиоматической чистоты теоремы глобальной оптимальности:
-#print axioms MarkovL1Quantizer.quantizeBipolarBlockwiseQ_certified_optimal
+#### New in v1.1.0
+* **`MarkovL1Quantizer.lean`**: Computable group-wise 1-bit quantizer over $\mathbb{Q}$ without `Classical.choice`, accompanied by the formal global $\ell_1$-optimality theorem `quantizeBipolarBlockwiseQ_certified_optimal` and reproducible `#eval` benchmarks across multi-channel and outlier layers.
