@@ -119,7 +119,7 @@ theorem solveDipoleBlockProjection_mem_subspace {m k : ℕ} (cfg : DipoleConfig 
   injection h_some with h_eq
   dsimp [DipoleConfig.isValid] at h_val
   rw [Bool.and_eq_true] at h_val
-  refine ⟨h_val.2, fun b => ((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 : ℝ), ?_⟩
+  refine ⟨h_val.2, fun b => (((x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 : ℚ) : ℝ), ?_⟩
   have h_proj_def : out.projection = fun i =>
       ∑ b : Fin k, if cfg.supp b i then (x (cfg.idx1 b) + x (cfg.idx2 b)) / 2 else 0 := by
     rw [← h_eq]
@@ -127,9 +127,9 @@ theorem solveDipoleBlockProjection_mem_subspace {m k : ℕ} (cfg : DipoleConfig 
   dsimp [embedQ, DisjointBlockSubspace.eval, buildDisjointSubspace]
   rw [h_proj_def]
   dsimp only
-  push_cast
+  simp only [Rat.cast_sum, Rat.cast_ite, Rat.cast_zero]
   refine Finset.sum_congr rfl fun b _ => ?_
-  split_ifs <;> simp
+  split_ifs <;> rfl
 
 /-- Теорема 2 (Главная теорема корректности солвера):
     Если `solveDipoleBlockProjection cfg x = some out`, то вещественный вектор остатка
@@ -224,8 +224,7 @@ theorem checkBipolarZeroLayerQ_sound {m r : ℕ} (A : Fin r → Fin m → ℚ) (
     have h_cast : (((∑ i : Fin m, A j i * u i : ℚ) : ℝ)) = 0 := by
       rw [hj]; simp
     dsimp [embedQ]
-    push_cast at h_cast
-    exact h_cast
+    simpa only [Rat.cast_sum, Rat.cast_mul] using h_cast
   · intro i
     rw [List.all_eq_true] at h_bip_all
     have hi := h_bip_all i (List.mem_finRange i)
@@ -253,8 +252,8 @@ def exampleInput : Fin 4 → ℚ
   | ⟨2, _⟩ => -6
   | ⟨3, _⟩ => 2
 
-/-- Ожидаемый результат:
-    c = (7, -2), проекция v* = (7, 7, -2, -2), сбалансированный остаток r* = (3, -3, -4, 4) ∈ P_B⁻¹(0) -/
+-- Ожидаемый результат:
+-- c = (7, -2), проекция v* = (7, 7, -2, -2), сбалансированный остаток r* = (3, -3, -4, 4) ∈ P_B⁻¹(0)
 #eval
   match solveDipoleBlockProjection exampleDipoleCfg exampleInput with
   | some out =>
@@ -263,7 +262,7 @@ def exampleInput : Fin 4 → ℚ
       s!"residual = ({out.residual 0}, {out.residual 1}, {out.residual 2}, {out.residual 3})"
   | none => "Overlap detected (Delta >= 2)"
 
-/-- Пример 2: Вырожденный случай с перекрытием носителей {0, 1} и {1, 2} (Δ = 2) -> солвер корректно отклоняет -/
+-- Пример 2: Вырожденный случай с перекрытием носителей {0, 1} и {1, 2} (Δ = 2) -> солвер корректно отклоняет
 def overlappingCfg : DipoleConfig 4 2 where
   idx1 b := if b.val == 0 then 0 else 1
   idx2 b := if b.val == 0 then 1 else 2
