@@ -2,6 +2,7 @@ import MarkovL1Complexity
 import MarkovL1Solver
 import MarkovL1WeightedSolver
 import MarkovL1Tactic
+import MarkovL1TernaryQuantizer
 
 open MarkovL1Complexity
 open MarkovL1Solver
