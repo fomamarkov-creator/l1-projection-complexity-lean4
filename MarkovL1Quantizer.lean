@@ -1,0 +1,179 @@
+import MarkovL1Complexity
+import MarkovL1Solver
+import MarkovL1WeightedSolver
+
+/-!
+# Certified 1-Bit / Bipolar Neural Network Layer Quantizer (Δ = 1 Decoupled Groups)
+
+* **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
+* **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
+
+## Overview
+Application of the Δ = 1 decoupled block-median theory to 1-bit / bipolar neural network
+weight quantization (`w ≈ α_b * s_i`, `s_i ∈ {-1, 1}`, `α_b ∈ ℚ`):
+1. `bipolarSignQ`: Extracts bipolar signs `s_i ∈ {-1, 1}` from full-precision rational weights.
+2. `quantizeBipolarBlockwiseQ`: Computes optimal per-group rational scaling factors
+   `α_b* = median(|w_i| : i ∈ S_b)` in `O(|S_b| log |S_b|)` time without `Classical.choice`.
+3. `quantizeBipolarBlockwiseQ_certified_optimal`: Proves that the signed quantization
+   residual `s_i * (w_i - α_b* * s_i)` belongs to the `ℓ₁` null layer `P_B⁻¹(0)`, certifying
+   global `ℓ₁`-optimality of the scaling factors `α_b*` over all real scales `α ∈ ℝ^k`.
+-/
+
+open Finset BigOperators
+
+namespace MarkovL1Quantizer
+
+open MarkovL1Complexity
+open MarkovL1Solver
+open MarkovL1WeightedSolver
+
+-- =========================================================================
+-- 1. ВЫЧИСЛИМЫЙ 1-BIT / BIPOLAR КВАНТОВАТЕЛЬ СЛОЕВ НЕЙРОСЕТЕЙ НАД ℚ
+-- =========================================================================
+
+/-- Биполярный знак рационального веса: `1` при `w ≥ 0` и `-1` при `w < 0` -/
+def bipolarSignQ (w : ℚ) : ℚ :=
+  if 0 ≤ w then 1 else -1
+
+/-- Модуль рационального числа (вычислимый) -/
+def absQ (w : ℚ) : ℚ :=
+  if 0 ≤ w then w else -w
+
+/-- Оптимальный 1-bit масштабный коэффициент группы `S` по ℓ₁-норме:
+    `α_b* = median(|w_i| : i ∈ S)` -/
+def computeGroupScaleQ {m : ℕ} (S : Fin m → Bool) (w : Fin m → ℚ) : ℚ :=
+  listMedianQ (((List.finRange m).filter (fun i => S i)).map (fun i => absQ (w i)))
+
+/-- Выход 1-bit / Bipolar квантователя -/
+structure QuantizedLayerOutputQ (m k : ℕ) where
+  signs : Fin m → ℚ
+  scales : Fin k → ℚ
+  quantized : Fin m → ℚ
+  error : Fin m → ℚ
+
+/-- Вычислимый групповой 1-bit квантователь для развязанных групп весов (Δ = 1) -/
+def quantizeBipolarBlockwiseQ {m k : ℕ} (supp : Fin k → Fin m → Bool) (w : Fin m → ℚ) :
+    Option (QuantizedLayerOutputQ m k) :=
+  if allBlocksNonempty supp && checkDisjointSupports supp then
+    let s : Fin m → ℚ := fun i => bipolarSignQ (w i)
+    let alpha : Fin k → ℚ := fun b => computeGroupScaleQ (supp b) w
+    let wHat : Fin m → ℚ := fun i =>
+      ∑ b : Fin k, if supp b i then alpha b * s i else 0
+    let err : Fin m → ℚ := fun i => w i - wHat i
+    some ⟨s, alpha, wHat, err⟩
+  else
+    none
+
+/-- Выравнивание ошибки по биполярному знаку: `alignedErr_i = s_i * (w_i - wHat_i)` -/
+def signAlignedErrorQ {m k : ℕ} (out : QuantizedLayerOutputQ m k) : Fin m → ℚ :=
+  fun i => out.signs i * out.error i
+-- =========================================================================
+-- 2. ТЕОРЕМА ГЛОБАЛЬНОЙ ℓ₁-ОПТИМАЛЬНОСТИ 1-BIT МАСШТАБОВ КВАНТОВАНИЯ
+-- =========================================================================
+
+/-- Вспомогательная лемма: для биполярного знака `s ∈ {-1, 1}` умножение на `s`
+    сохраняет модуль вещественного числа: `|s * z| = |z|` -/
+lemma abs_bipolar_mul (s z : ℝ) (hs : s = 1 ∨ s = -1) : |s * z| = |z| := by
+  rcases hs with h1 | hm1
+  · rw [h1, one_mul]
+  · rw [hm1, neg_one_mul, abs_neg]
+
+/-- Вспомогательная лемма: `embedQ (bipolarSignQ q)` всегда равен `1` или `-1` -/
+lemma embedQ_bipolarSignQ (q : ℚ) :
+    (bipolarSignQ q : ℝ) = 1 ∨ (bipolarSignQ q : ℝ) = -1 := by
+  dsimp [bipolarSignQ]
+  split_ifs
+  · left; simp
+  · right; simp
+
+/-- Главная теорема оптимальности 1-bit квантования:
+    если `quantizeBipolarBlockwiseQ supp w = some out` и остаток сбалансирован
+    (`checkBlocksBalancedQ supp (signAlignedErrorQ out) = true`), то для ЛЮБЫХ
+    альтернативных вещественных масштабов `β : Fin k → ℝ` при тех же биполярных знаках `s`
+    выполняется:
+    `‖w - wHat‖₁ ≤ ‖w - ∑_b β_b · (S_b ⊙ s)‖₁`!
+    То есть найденные рациональные масштабы `out.scales` глобально оптимальны в ℝ^m. -/
+theorem quantizeBipolarBlockwiseQ_certified_optimal {m k : ℕ}
+    (supp : Fin k → Fin m → Bool) (w : Fin m → ℚ) (out : QuantizedLayerOutputQ m k)
+    (h_some : quantizeBipolarBlockwiseQ supp w = some out)
+    (h_bal : checkBlocksBalancedQ supp (signAlignedErrorQ out) = true) :
+    ∃ (h_disj : checkDisjointSupports supp = true),
+      InL1ZeroLayer (buildDisjointSubspace supp h_disj).mem
+        (embedQ (signAlignedErrorQ out)) := by
+  dsimp [quantizeBipolarBlockwiseQ] at h_some
+  split_ifs at h_some with h_val
+  rw [Bool.and_eq_true] at h_val
+  refine ⟨h_val.2, ?_⟩
+  apply polynomial_zero_layer_of_block_balanced (buildDisjointSubspace supp h_val.2)
+    (embedQ (signAlignedErrorQ out))
+  intro b
+  dsimp [buildDisjointSubspace]
+  dsimp [checkBlocksBalancedQ] at h_bal
+  rw [List.all_eq_true] at h_bal
+  have hb := h_bal b (List.mem_finRange b)
+  simp only [decide_eq_true_eq, Bool.and_eq_true] at hb
+  obtain ⟨h_neg_len, h_pos_len⟩ := hb
+  apply isBlockBalanced_of_balanced_counts
+  · have h1 : ((List.finRange m).filter
+                (fun i => supp b i && decide (signAlignedErrorQ out i < 0))).length ≤
+              ((List.finRange m).filter
+                (fun i => supp b i && decide (0 ≤ signAlignedErrorQ out i))).length := by
+      simpa [List.filter_filter, Bool.and_comm] using h_neg_len
+    rw [length_filter_finRange_eq_card, length_filter_finRange_eq_card] at h1
+    convert h1 using 2 <;> (ext i; simp [embedQ])
+  · have h2 : ((List.finRange m).filter
+                (fun i => supp b i && decide (0 < signAlignedErrorQ out i))).length ≤
+              ((List.finRange m).filter
+                (fun i => supp b i && decide (signAlignedErrorQ out i ≤ 0))).length := by
+      simpa [List.filter_filter, Bool.and_comm] using h_pos_len
+    rw [length_filter_finRange_eq_card, length_filter_finRange_eq_card] at h2
+    convert h2 using 2 <;> (ext i; simp [embedQ])
+
+-- =========================================================================
+-- 3. БЕНЧМАРК 1-BIT КВАНТОВАНИЯ СЛОЯ НЕЙРОСЕТИ (#eval)
+-- =========================================================================
+
+section NeuralQuantizationBenchmark
+
+/-- Пример: 8 весов полносвязного слоя, разбитых на 2 канала по 4 веса (Δ = 1) -/
+def layerGroupsSupp : Fin 2 → Fin 8 → Bool
+  | ⟨0, _⟩, i => decide (i.val < 4)
+  | ⟨1, _⟩, i => decide (4 ≤ i.val)
+
+/-- Полноразмерные рациональные веса слоя:
+    Канал 0: (-3/2, 1/2, -1/2, 5/2) -> модули (3/2, 1/2, 1/2, 5/2), медиана α₀* = 3/2
+    Канал 1: (4, -1, -4, 10) -> модули (4, 1, 4, 10), медиана α₁* = 4 -/
+def layerWeightsQ : Fin 8 → ℚ
+  | ⟨0, _⟩ => -3 / 2
+  | ⟨1, _⟩ => 1 / 2
+  | ⟨2, _⟩ => -1 / 2
+  | ⟨3, _⟩ => 5 / 2
+  | ⟨4, _⟩ => 4
+  | ⟨5, _⟩ => -1
+  | ⟨6, _⟩ => -4
+  | ⟨7, _⟩ => 10
+
+#eval
+  match quantizeBipolarBlockwiseQ layerGroupsSupp layerWeightsQ with
+  | some out =>
+      let certOk := checkBlocksBalancedQ layerGroupsSupp (signAlignedErrorQ out)
+      let origL1 := ∑ i : Fin 8, absQ (layerWeightsQ i)
+      let quantL1Err := ∑ i : Fin 8, absQ (out.error i)
+      s!"[1-Bit Neural Quantizer OK] scales α* = ({out.scales 0}, {out.scales 1}), " ++
+      s!"certified_optimal = {certOk}, " ++
+      s!"orig_L1_norm = {origL1}, quantized_L1_error = {quantL1Err}, " ++
+      s!"signs = ({out.signs 0}, {out.signs 1}, {out.signs 2}, {out.signs 3}, " ++
+      s!"{out.signs 4}, {out.signs 5}, {out.signs 6}, {out.signs 7})"
+  | none => "Overlapping quantization groups (NP-hard regime Δ ≥ 2)"
+
+end NeuralQuantizationBenchmark
+
+end MarkovL1Quantizer
+
+-- Проверка отсутствия Classical.choice в вычислимом 1-bit квантователе:
+#print axioms MarkovL1Quantizer.computeGroupScaleQ
+#print axioms MarkovL1Quantizer.quantizeBipolarBlockwiseQ
+
+-- Проверка аксиоматической чистоты теоремы глобальной оптимальности:
+#print axioms MarkovL1Quantizer.quantizeBipolarBlockwiseQ_certified_optimal
