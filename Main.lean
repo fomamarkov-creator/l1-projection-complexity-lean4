@@ -4,6 +4,9 @@ import MarkovL1WeightedSolver
 import MarkovL1Tactic
 import MarkovL1Quantizer
 import MarkovL1TernaryQuantizer
+import MarkovL1WeightedTernary
+import MarkovL1TreewidthSolver
+
 
 open MarkovL1Complexity
 open MarkovL1Solver
