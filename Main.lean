@@ -74,6 +74,17 @@ def runDemo : IO Unit := do
   IO.println s!"  Input block      = [1/10, -1/10, 4, -4, 4, 20]"
   IO.println s!"  Optimal (θ*, α*) = ({θ_star}, {α_star})"
 
+  IO.println "\n=== Certified Activation-Weighted 1.58-Bit Quantizer ==="
+  let wEntries : List MarkovL1WeightedTernary.WeightedEntryQ := [
+    ⟨1/10, 1⟩, ⟨-1/10, 1⟩, ⟨4, 10⟩, ⟨-4, 10⟩, ⟨20, 1⟩
+  ]
+  let (wθ, wα) := MarkovL1WeightedTernary.quantizeWeightedTernaryExactQ wEntries
+  IO.println s!"  Weighted Optimal (θ*, α*) = ({wθ}, {wα})"
+
+  IO.println "\n=== Certified Bounded-Treewidth (Δ = 2) FPT Solver ==="
+  let fptCost := MarkovL1TreewidthSolver.solveChainOverlapFPT [-4, 0, 4] [4, 8, 4]
+  IO.println s!"  Chain Overlap (Δ = 2) Min L1 Cost = {fptCost}"
+
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
   let tokens := csv.splitOn ","
