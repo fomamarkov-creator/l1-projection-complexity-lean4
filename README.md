@@ -32,6 +32,11 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
 7. **`Main.lean` \(\to\) `l1solver`:**
    * Standalone native executable running all certified benchmarks (`--demo`) and interactive exact-rational queries (`--dipole`).
 
+8. **`MarkovL1WeightedTernary.lean`:**
+   * Formalizes activation-weighted 1.58-bit ternary $\ell_1$ projections ($\sum \gamma_i |w_i - Q_{\theta,\alpha}(w_i)|$) over exact rationals $\mathbb{Q}$ using constructive weighted medians (`quantizeWeightedTernaryExactQ_certified`).
+9. **`MarkovL1TreewidthSolver.lean`:**
+   * Proves polynomial-time fixed-parameter tractability (FPT) for structured $\Delta = 2$ chain overlaps (`solveChainOverlapFPT`), bridging the boundary between $\mathbf{P}$ and $\mathbf{NP}$.
+   * 
 ---
 
 ## Build & Run
