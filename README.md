@@ -1,10 +1,10 @@
 [![Lean Action CI](../../actions/workflows/lean_action_ci.yml/badge.svg)](../../actions/workflows/lean_action_ci.yml)
 
-**Toolchain:** Lean `v4.37.0-rc1` | **Verified Theorems:** 27 | **Sorry count:** 0 | **License:** AGPL-3.0
+**Toolchain:** Lean `v4.37.0-rc1` | **Verified Theorems:** 28 | **Sorry count:** 0 | **License:** AGPL-3.0
 
 # Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers
 
-Machine-checked formal verification, certified rational solvers, proof-by-reflection tactics, and a native CLI executable in **Lean 4** characterizing the computational complexity dichotomy of null layers $P_V^{-1}(0)$ of multivalued metric projections in finite-dimensional $\ell_1^m$ spaces.
+Machine-checked formal verification, certified rational solvers, proof-by-reflection tactics, a certified 1-bit neural network quantizer, and a native CLI executable in **Lean 4** characterizing the computational complexity dichotomy of null layers $P_V^{-1}(0)$ of multivalued metric projections in finite-dimensional $\ell_1^m$ spaces.
 
 * **Author:** E. S. Markov (ORCID: `0009-0005-2235-5464`)
 * **Affiliation:** Independent Researcher, Astrakhan, Russia
@@ -29,7 +29,10 @@ Machine-checked formal verification, certified rational solvers, proof-by-reflec
 4. **`MarkovL1Tactic.lean`** *(Proof-by-Reflection Automation)*
    * Custom Lean 4 tactics (`l1_zero_layer`, `l1_bipolar_cert`, `l1_block_cert`) discharging multidimensional and blockwise $\ell_1$ null-layer goals in one line.
 
-5. **`Main.lean` (`l1solver`)** *(Standalone Native CLI Executable)*
+5. **`MarkovL1Quantizer.lean`** *(Certified 1-Bit / Bipolar Neural Network Quantizer)*
+   * Exact rational group-wise 1-bit quantizer ($\alpha_b^* = \mathrm{median}(|w|_{S_b})$) with formal $\ell_1$-optimality proof and comparative benchmarks (`MeanAbs` vs `GlobalMed` vs `Group Δ=1`).
+
+6. **`Main.lean` (`l1solver`)** *(Standalone Native CLI Executable)*
    * Compiled command-line tool executing certified $\ell_1$ projections over exact rationals $\mathbb{Q}$.
 
 ---
