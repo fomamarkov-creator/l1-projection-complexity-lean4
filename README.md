@@ -2,9 +2,9 @@
 
 **Lean Version:** `v4.37.0-rc1` | **Mathlib:** `v4.37.0-rc1` | **License:** AGPL-3.0
 
-# Formal Verification of \(\ell_1\) Metric Projection Complexity, Exact-Rational Solvers, and 1.58-Bit Ternary Quantization in Lean 4
+# Formal Verification of (ℓ₁) Metric Projection Complexity, Exact-Rational Solvers, and 1.58-Bit Ternary Quantization in Lean 4
 
-Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) complexity phase transitions for \(\ell_1\) metric projection null layers, constructive exact-rational (\(\mathbb{Q}\)) solvers without `Classical.choice`, proof-by-reflection tactics, and certified 1-bit / 1.58-bit neural network quantizers.
+Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) complexity phase transitions for (ℓ₁) metric projection null layers, constructive exact-rational (\(\mathbb{Q}\)) solvers without `Classical.choice`, proof-by-reflection tactics, and certified 1-bit / 1.58-bit neural network quantizers.
 
 * **Author:** E. S. Markov (ORCID: `0009-0005-2235-5464`)
 * **Affiliation:** Independent Researcher, Astrakhan, Russia
