@@ -9,11 +9,12 @@ open MarkovL1WeightedSolver
 
 /-- Разбор списка рациональных чисел (целых или дробей вида `a/b`) из строки -/
 def parseRatToken (s : String) : Option ℚ :=
-  match s.trim.splitOn "/" with
+  let clean := s.trimAscii.toString
+  match clean.splitOn "/" with
   | [numStr] =>
-      numStr.toInt?.map fun n => (n : ℚ)
+      (String.toInt? numStr.trimAscii.toString).map fun n => (n : ℚ)
   | [numStr, denStr] =>
-      match numStr.toInt?, denStr.toInt? with
+      match String.toInt? numStr.trimAscii.toString, String.toInt? denStr.trimAscii.toString with
       | some n, some d => if d == 0 then none else some ((n : ℚ) / (d : ℚ))
       | _, _ => none
   | _ => none
@@ -33,7 +34,7 @@ def printHelp : IO Unit := do
 
 /-- Запуск встроенных сертифицированных тестов по всем 4 модулям -/
 def runDemo : IO Unit := do
-  IO.println "=== [1] Certified Dipole Solver (Δ = 1, O(m) exact rationals) ==="
+  IO.println "=== Certified Dipole Solver (Δ = 1, O(m) exact rationals) ==="
   match solveDipoleBlockProjection exampleDipoleCfg exampleInput with
   | some out =>
       IO.println s!"  Input x        = (10, 4, -6, 2)"
@@ -43,12 +44,12 @@ def runDemo : IO Unit := do
   | none =>
       IO.println "  Error: unexpected overlap"
 
-  IO.println "\n=== [2] Phase-Transition Barrier Detector (Δ = 2 overlap check) ==="
+  IO.println "\n=== Phase-Transition Barrier Detector (Δ = 2 overlap check) ==="
   match solveDipoleBlockProjection overlappingCfg exampleInput with
   | some _ => IO.println "  Unexpected success"
   | none => IO.println "  Overlap (Δ ≥ 2) detected: safely rejected non-decoupled instance."
 
-  IO.println "\n=== [3] General Arbitrary-Size Block Median Solver (ℝ⁸: blocks of size 3 & 5) ==="
+  IO.println "\n=== General Arbitrary-Size Block Median Solver (ℝ⁸: blocks of size 3 & 5) ==="
   match solveGeneralBlockProjection generalBlockSupp generalInput with
   | some out =>
       let ok := checkBlocksBalancedQ generalBlockSupp out.residual
@@ -58,9 +59,9 @@ def runDemo : IO Unit := do
   | none =>
       IO.println "  Error: invalid blocks"
 
-  IO.println "\n=== [4] Multidimensional Bipolar Certificate Checker (MultiSpan) ==="
+  IO.println "\n=== Multidimensional Bipolar Certificate Checker (MultiSpan) ==="
   let valid := checkBipolarZeroLayerQ exampleMatrix exampleCert
-  IO.println s!"  u = (1, -1, 1, -1) ∈ P_{{MultiSpan A}}⁻¹(0) : {valid}"
+  IO.println s!"  u = (1, -1, 1, -1) ∈ P_(MultiSpan A)⁻¹(0) : {valid}"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
