@@ -1,0 +1,99 @@
+import MarkovL1Complexity
+import MarkovL1Solver
+import MarkovL1WeightedSolver
+import MarkovL1Tactic
+
+open MarkovL1Complexity
+open MarkovL1Solver
+open MarkovL1WeightedSolver
+
+/-- Разбор списка рациональных чисел (целых или дробей вида `a/b`) из строки -/
+def parseRatToken (s : String) : Option ℚ :=
+  match s.trim.splitOn "/" with
+  | [numStr] =>
+      numStr.toInt?.map fun n => (n : ℚ)
+  | [numStr, denStr] =>
+      match numStr.toInt?, denStr.toInt? with
+      | some n, some d => if d == 0 then none else some ((n : ℚ) / (d : ℚ))
+      | _, _ => none
+  | _ => none
+
+/-- Вывод справки по использованию консольного сертифицированного решателя -/
+def printHelp : IO Unit := do
+  IO.println "==================================================================="
+  IO.println " Certified ℓ₁ Metric Projection Solver (Lean 4 Verified Engine)"
+  IO.println " Author: E. S. Markov | License: AGPLv3"
+  IO.println "==================================================================="
+  IO.println "Usage:"
+  IO.println "  l1solver --demo                  Run built-in certified benchmarks"
+  IO.println "  l1solver --dipole <x0,x1,...>    Solve decoupled dipole pairs (Δ = 1)"
+  IO.println "                                   on adjacent pairs {0,1}, {2,3}, ..."
+  IO.println "Example:"
+  IO.println "  l1solver --dipole 10,4,-6,2"
+
+/-- Запуск встроенных сертифицированных тестов по всем 4 модулям -/
+def runDemo : IO Unit := do
+  IO.println "=== [1] Certified Dipole Solver (Δ = 1, O(m) exact rationals) ==="
+  match solveDipoleBlockProjection exampleDipoleCfg exampleInput with
+  | some out =>
+      IO.println s!"  Input x        = (10, 4, -6, 2)"
+      IO.println s!"  Medians c*     = ({out.coeffs 0}, {out.coeffs 1})"
+      IO.println s!"  Projection v*  = ({out.projection 0}, {out.projection 1}, {out.projection 2}, {out.projection 3})"
+      IO.println s!"  Residual r*    = ({out.residual 0}, {out.residual 1}, {out.residual 2}, {out.residual 3}) ∈ P_B⁻¹(0)"
+  | none =>
+      IO.println "  Error: unexpected overlap"
+
+  IO.println "\n=== [2] Phase-Transition Barrier Detector (Δ = 2 overlap check) ==="
+  match solveDipoleBlockProjection overlappingCfg exampleInput with
+  | some _ => IO.println "  Unexpected success"
+  | none => IO.println "  Overlap (Δ ≥ 2) detected: safely rejected non-decoupled instance."
+
+  IO.println "\n=== [3] General Arbitrary-Size Block Median Solver (ℝ⁸: blocks of size 3 & 5) ==="
+  match solveGeneralBlockProjection generalBlockSupp generalInput with
+  | some out =>
+      let ok := checkBlocksBalancedQ generalBlockSupp out.residual
+      IO.println s!"  Block Medians  = ({out.coeffs 0}, {out.coeffs 1})"
+      IO.println s!"  Certified Bal  = {ok}"
+      IO.println s!"  Residual r*    = ({out.residual 0}, {out.residual 1}, {out.residual 2}, {out.residual 3}, {out.residual 4}, {out.residual 5}, {out.residual 6}, {out.residual 7})"
+  | none =>
+      IO.println "  Error: invalid blocks"
+
+  IO.println "\n=== [4] Multidimensional Bipolar Certificate Checker (MultiSpan) ==="
+  let valid := checkBipolarZeroLayerQ exampleMatrix exampleCert
+  IO.println s!"  u = (1, -1, 1, -1) ∈ P_{{MultiSpan A}}⁻¹(0) : {valid}"
+
+/-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
+def runDipoleCLI (csv : String) : IO Unit := do
+  let tokens := csv.splitOn ","
+  let parsed := tokens.filterMap parseRatToken
+  if parsed.length != tokens.length || parsed.isEmpty || parsed.length % 2 != 0 then
+    IO.println "Error: please provide an even number of comma-separated rationals (e.g., 10,4,-6,2)."
+  else
+    let k := parsed.length / 2
+    let m := 2 * k
+    let x : Fin m → ℚ := fun i => parsed.getD i.val 0
+    let cfg : DipoleConfig m k := {
+      idx1 := fun b => ⟨2 * b.val, by omega⟩
+      idx2 := fun b => ⟨2 * b.val + 1, by omega⟩
+    }
+    match solveDipoleBlockProjection cfg x with
+    | some out =>
+        let cList := (List.finRange k).map out.coeffs
+        let vList := (List.finRange m).map out.projection
+        let rList := (List.finRange m).map out.residual
+        IO.println s!"[Certified Δ=1 Output]"
+        IO.println s!"  Coefficients c* = {cList}"
+        IO.println s!"  Projection   v* = {vList}"
+        IO.println s!"  Residual     r* = {rList}  (Verified ∈ P_B⁻¹(0))"
+    | none =>
+        IO.println "Error: invalid block configuration."
+
+def main (args : List String) : IO Unit := do
+  match args with
+
+  | [] | ["--demo"] => runDemo
+  | ["--help"] | ["-h"] => printHelp
+  | ["--dipole", csv] => runDipoleCLI csv
+  | _ =>
+      IO.println "Unknown arguments."
+      printHelp
