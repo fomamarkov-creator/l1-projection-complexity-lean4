@@ -1,19 +1,31 @@
 [![Lean Action CI](../../actions/workflows/lean_action_ci.yml/badge.svg)](../../actions/workflows/lean_action_ci.yml)
 
+**Toolchain:** Lean `v4.37.0-rc1` | **Verified Theorems:** 21 + 3 Soundness Proofs | **Sorry count:** 0 | **License:** AGPL-3.0
 
-# Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers (Lean 4)
+# Combinatorial Complexity Phase Transitions of $\ell_1$ Metric Projection Null Layers
 
-**Toolchain:** Lean v4.37.0-rc1 | **Sorry count:** 0 |
-**License:** AGPL-3.0 |
+Machine-checked formal verification and executable certified solver in **Lean 4** characterizing the computational complexity dichotomy of null layers $P_V^{-1}(0)$ of multivalued metric projections in finite-dimensional $\ell_1^m$ spaces.
 
-**Author:** E. S. Markov (ORCID: [0009-0005-2235-5464](https://orcid.org))
+* **Author:** E. S. Markov (ORCID: `0009-0005-2235-5464`)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
 
-Formal machine-checked verification in **Lean 4** of the computational complexity dichotomy for null layers $P_V^{-1}(0)$ of multivalued metric projections in $\ell_1^m$:
-1. **Universal NP-Completeness:** Exact polynomial-time reductions from **3-SAT** (`sat3_satisfiable_iff_zero_layer`), **Partition** (`partition_iff_bipolar_mem_zero_layer`), and **Subset-Sum** (`subsetSum_iff_boolean_shifted_hyperplane`).
-2. **Polynomial-Time Tractability:** Blockwise median sufficiency (`polynomial_zero_layer_of_block_balanced`) and linear-time dipole selectors (`dipole_pairs_in_polynomial_zero_layer`) when basis supports are disjoint ($\Delta = 1$).
-3. **Phase Transition Barriers:** Strict layer expansion (`strict_layer_expansion`), global sign rigidity under minimal overlap $\Delta = 2$ (`overlapping_dipole_chain_rigid`), and the exponential superincreasing barrier $a_i = 2^i$ (`superincreasing_shifted_layer_unique`).
+---
 
-## Build & Verify Locally
+## Repository Structure
+
+1. **`MarkovL1Complexity.lean`** *(Core Theory — 21 verified theorems, `0 sorry`s)*
+   * **Bipolar Orthogonality Duality:** Exact characterization of bipolar vectors in $P_V^{-1}(0)$ via Euclidean orthogonality.
+   * **Universal NP-Completeness:** Polynomial-time reductions from `Subset-Sum`, `Partition`, and general `3-SAT`.
+   * **Polynomial-Time Tractability ($\Delta = 1$):** Blockwise median decomposition and $O(m)$ dipole-pair selectors for disjoint supports.
+   * **Phase-Transition Barriers:** Layer expansion, sign-propagation rigidity at $\Delta = 2$, and the superincreasing barrier $a_i = 2^i$.
+
+2. **`MarkovL1Solver.lean`** *(Executable Certified Solver & Verifier over $\mathbb{Q}$)*
+   * Computable detectors, $O(m)$ block solvers with formal soundness proofs, certificate verifiers, and executable `#eval` test cases.
+
+---
+
+## Local Build & Verification
 
 ```bash
 lake exe cache get
