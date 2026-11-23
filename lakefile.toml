@@ -1,7 +1,7 @@
 name = "MarkovL1Complexity"
-version = "0.1.0"
+version = "0.2.0"
 keywords = ["math", "lean4", "complexity", "banach-spaces", "3sat", "verified-solver", "tactic", "quantization"]
-defaultTargets = ["MarkovL1Complexity", "MarkovL1Solver", "MarkovL1WeightedSolver", "MarkovL1Tactic", "MarkovL1Quantizer", "l1solver"]
+defaultTargets = ["MarkovL1Complexity", "MarkovL1Solver", "MarkovL1WeightedSolver", "MarkovL1Tactic", "MarkovL1Quantizer", "MarkovL1TernaryQuantizer", "l1solver"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -26,6 +26,9 @@ name = "MarkovL1Tactic"
 
 [[lean_lib]]
 name = "MarkovL1Quantizer"
+
+[[lean_lib]]
+name = "MarkovL1TernaryQuantizer"
 
 [[lean_exe]]
 name = "l1solver"
