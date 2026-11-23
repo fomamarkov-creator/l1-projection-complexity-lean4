@@ -9,7 +9,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
 * **Author:** E. S. Markov (ORCID: `0009-0005-2235-5464`)
 * **Affiliation:** Independent Researcher, Astrakhan, Russia
 * **License:** GNU Affero General Public License v3.0 (AGPLv3)
-
+ 
 ---
 
 ## Verified Modules (6 Core Libraries + Standalone CLI)
