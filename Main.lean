@@ -8,6 +8,8 @@ import MarkovL1WeightedTernary
 import MarkovL1TreewidthSolver
 import MarkovL1ContinuousChainDP
 import MarkovL1TriangularActivation
+import MarkovL1GeneralTreewidthFPT
+
 
 open MarkovL1Complexity
 open MarkovL1Solver
