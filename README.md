@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (9 Core Libraries + Standalone CLI)
+## Verified Modules (12 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -36,7 +36,18 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
    * Formalizes activation-weighted 1.58-bit ternary $\ell_1$ projections ($\sum \gamma_i |w_i - Q_{\theta,\alpha}(w_i)|$) over exact rationals $\mathbb{Q}$ using constructive weighted medians (`quantizeWeightedTernaryExactQ_certified`).
 9. **`MarkovL1TreewidthSolver.lean`:**
    * Proves polynomial-time fixed-parameter tractability (FPT) for structured $\Delta = 2$ chain overlaps (`solveChainOverlapFPT`), bridging the boundary between $\mathbf{P}$ and $\mathbf{NP}$.
-   * 
+  *
+10. **MarkovL1ContinuousChainDP.lean *(New)*:**
+    - Eliminates discrete grid quantization (`G ⊂ ℚ`) for `Δ = 2` chain overlaps by solving the continuous Bellman recurrence over all of `ℚ^m` via convex piecewise-linear (`PWLConvexQ`) slope-clipping (`infConvAbs`) and backward trajectory reconstruction (`solveContinuousChainDP`).
+    - Includes a constructive Lagrangian dual certificate verifier (`checkChainOptimalCertQ`) proving global optimality across continuous `ℚ^m`.
+
+11. **MarkovL1TriangularActivation.lean *(New)*:**
+    - Generalizes activation-weighted quantization to correlated input channels (`‖(W - Ŵ)R‖₁`) via upper-triangular Cholesky/QR error feedback (`quantizeBlockTriangularQ`).
+    - Formally proves `triangular_channel_exact_reduction`, showing that off-diagonal channel correlations reduce identically to sequential 1D weighted projections on compensated weights `w̃_j`.
+
+12. **MarkovL1GeneralTreewidthFPT.lean *(New)*:**
+    - Extends bounded-treewidth dynamic programming from chains (`k = 1, Δ = 2`) to treewidth `k = 2` (`Δ = 3`) triple-overlap graphs (`solveTripleOverlapFPT` in `O(m |G|³)` time), modeling joint quantization of coupled transformer projections (`W_Q, W_K, W_V`).
+
 ---
 
 ## Build & Run
