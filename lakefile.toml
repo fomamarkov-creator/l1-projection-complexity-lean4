@@ -39,3 +39,6 @@ name = "MarkovL1TreewidthSolver"
 [[lean_exe]]
 name = "l1solver"
 root = "Main"
+
+[[lean_lib]]
+name = "MarkovL1ContinuousChainDP"
