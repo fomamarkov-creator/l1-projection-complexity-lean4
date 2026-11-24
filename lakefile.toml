@@ -42,3 +42,6 @@ root = "Main"
 
 [[lean_lib]]
 name = "MarkovL1ContinuousChainDP"
+
+[[lean_lib]]
+name = "MarkovL1TriangularActivation"
