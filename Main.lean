@@ -6,7 +6,7 @@ import MarkovL1Quantizer
 import MarkovL1TernaryQuantizer
 import MarkovL1WeightedTernary
 import MarkovL1TreewidthSolver
-
+import MarkovL1ContinuousChainDP
 
 open MarkovL1Complexity
 open MarkovL1Solver
