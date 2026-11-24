@@ -88,6 +88,24 @@ def runDemo : IO Unit := do
   let fptCost := MarkovL1TreewidthSolver.solveChainOverlapFPT [-4, 0, 4] [4, 8, 4]
   IO.println s!"  Chain Overlap (Δ = 2) Min L1 Cost = {fptCost}"
 
+  IO.println "\n=== Certified Continuous Chain DP (Δ = 2, Grid-Free over ℚ^m) ==="
+  let (contCs, contCost) := MarkovL1ContinuousChainDP.solveContinuousChainDP [4/1, 8/1, 4/1]
+  let contCert := MarkovL1ContinuousChainDP.checkChainOptimalCertQ
+    [4/1, 8/1, 4/1] contCs [0/1, 1/1, 1/1] [0/1, -1/1]
+  IO.println s!"  Continuous c* = {contCs}, Min Cost = {contCost}, Dual Certified = {contCert}"
+
+  IO.println "\n=== Certified Triangular Activation Correlation Feedback (ℓ₁-GPTQ) ==="
+  let triWHat := MarkovL1TriangularActivation.quantizeBlockTriangularQ (2/1) (4/1)
+    [6/1, 5/1, 1/1] [[10/1, 0/1, 0/1], [8/1, 2/1, 0/1], [6/1, 4/1, 2/1]]
+  let triErr := MarkovL1TriangularActivation.triangularBlockErrorQ
+    [6/1, 5/1, 1/1] triWHat [[10/1, 0/1, 0/1], [8/1, 2/1, 0/1], [6/1, 4/1, 2/1]]
+  IO.println s!"  Triangular Compensated wHat = {triWHat}, Output L1 Error = {triErr}"
+
+  IO.println "\n=== Certified Treewidth k=2 (Δ = 3, W_Q/W_K/W_V Joint FPT) ==="
+  let tw2Cost := MarkovL1GeneralTreewidthFPT.solveTripleOverlapFPT
+    [-2/1, 0/1, 2/1, 4/1] [2/1, 0/1, 6/1, 4/1]
+  IO.println s!"  Joint Triple Overlap (Δ = 3, k = 2) Min L1 Cost = {tw2Cost}"
+
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
   let tokens := csv.splitOn ","
