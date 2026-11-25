@@ -51,3 +51,7 @@ name = "MarkovL1GeneralTreewidthFPT"
 
 [[lean_lib]]
 name = "MarkovL1NextGenQuantizer"
+
+[[lean_lib]]
+name = "MarkovL1SuperQuantizer"
+
