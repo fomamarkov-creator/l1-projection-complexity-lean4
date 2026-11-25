@@ -13,6 +13,7 @@ import MarkovL1NextGenQuantizer
 import MarkovL1SuperQuantizer
 import MarkovL1UltimateE8Engine
 import MarkovL1AttentionKVCache
+import MarkovL1LeechAndLowRank
 
 
 
@@ -147,6 +148,12 @@ def runDemo : IO Unit := do
   let x8 : MarkovL1AttentionKVCache.Vec8Q := ⟨2/1, 1/1, -1/1, 3/1, 1/2, -1/2, 4/1, 1/1⟩
   let hDot := MarkovL1AttentionKVCache.dot8Q (MarkovL1AttentionKVCache.walshHadamard8Q w8) (MarkovL1AttentionKVCache.walshHadamard8Q x8) / 8
   IO.println s!"  Multiplier-Free W₈ Domain Dot  : {hDot} (exact match without inverse weight transform)"
+
+  IO.println "\n=== 24D Leech Lattice (Λ₂₄, ~0.73 b/w) & Data-Free ℓ₁-LoRA ==="
+  IO.println s!"  Extended Golay Code G₂₄ Size   : {MarkovL1LeechAndLowRank.golay24Codewords.length} codewords (d_min = 8)"
+  let E_res : List (List ℚ) := [[2/1, 4/1, 6/1], [-1/1, -2/1, -3/1]]
+  let u_opt := MarkovL1LeechAndLowRank.updateLeftFactorL1Q E_res [1/1, 2/1, 3/1]
+  IO.println s!"  Data-Free ℓ₁-LoRA Rank-1 Factor: u*={u_opt} (exact residual elimination)"
 
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
