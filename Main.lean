@@ -19,7 +19,7 @@ import MarkovL1MoERoutingAndDynamicBits
 import MarkovL1ZeroKnowledgeInferenceCert
 import MarkovL1HCPAndBirkhoffQuantizer
 import MarkovL1FullTransformerCert
-
+import MarkovL1RoPEAndGolaySyndrome
 
 
 /-!
@@ -175,6 +175,7 @@ def runDemo : IO Unit := do
   IO.println s!"  Birkhoff–James ℓ₁-Orthogonality: {bjOrth}"
 
   IO.println "\n=== V-CORE v4.0: W32 Cascade, LUT Kernel, Mixed-Lattice & E2E Transformer Cert ==="
+    IO.println "\n=== V-CORE v4.0: W32 Cascade, LUT Kernel, Mixed-Lattice & E2E Transformer Cert ==="
   let v8 : MarkovL1FullTransformerCert.Vec8Q := ⟨1/2, -1/2, 1/4, 3/4, -1/4, 1/2, 0, -1/2⟩
   let v16 : MarkovL1FullTransformerCert.Vec16Q := (v8, MarkovL1FullTransformerCert.scaleVec8Q (-1) v8)
   let v32 : MarkovL1FullTransformerCert.Vec32Q := (v16, v16)
@@ -195,6 +196,16 @@ def runDemo : IO Unit := do
     L_act := 1/1, B_X := 2/1
   }
   IO.println s!"  E2E Transformer Block Drift    : ≤ {MarkovL1FullTransformerCert.transformerBlockTotalDriftQ blockBudget}"
+
+  IO.println "\n=== Module 23: Exact-Rational RoPE Drift & Golay G₂₄ Syndrome Algebra ==="
+  let (cRope, sRope) := MarkovL1RoPEAndGolaySyndrome.rationalCayleyCS (1/2)
+  IO.println s!"  Rational Cayley RoPE (c, s)    : ({cRope}, {sRope}), c²+s² = {cRope*cRope + sRope*sRope}"
+  let cw := MarkovL1RoPEAndGolaySyndrome.encodeGolay24 1337
+  let err : UInt32 := (1 : UInt32) <<< 5
+  let synClean := MarkovL1RoPEAndGolaySyndrome.syndromeGolay24 cw
+  let synNoisy := MarkovL1RoPEAndGolaySyndrome.syndromeGolay24 (cw ^^^ err)
+  let synErr := MarkovL1RoPEAndGolaySyndrome.syndromeGolay24 err
+  IO.println s!"  Golay G₂₄ Syndrome Invariance  : clean={synClean}, noisy={synNoisy}, errOnly={synErr}"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
