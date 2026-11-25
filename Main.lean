@@ -10,6 +10,7 @@ import MarkovL1ContinuousChainDP
 import MarkovL1TriangularActivation
 import MarkovL1GeneralTreewidthFPT
 import MarkovL1NextGenQuantizer
+import MarkovL1SuperQuantizer
 
 
 
@@ -130,6 +131,9 @@ def runDemo : IO Unit := do
     [1/10, -1/10, 4/1, -4/1, 10/1, 20/1]
   IO.println s!"  2-Stage Residual Cascade (3.16b): Stage-1 L1 Err = {err1} -> Stage-2 L1 Err = {err2}"
 
+  IO.println "\n=== V-CORE Super-Quantizer (Hadamard H₄ + D₄ Lattice + Adaptive Cascade) ==="
+  let sqOut := MarkovL1SuperQuantizer.superQuantize4Q (2/1) (10/1, -2/1, 3/1, -1/1)
+  IO.println s!"  Adaptive SuperQuantizer (Hard Block): mode={repr sqOut.mode}, rotErr={sqOut.rotatedErr}, maxCertErr={sqOut.certifiedMaxOutputErr}"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
