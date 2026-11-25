@@ -122,6 +122,15 @@ def runDemo : IO Unit := do
     [-2/1, 0/1, 2/1, 4/1] [2/1, 0/1, 6/1, 4/1]
   IO.println s!"  Joint Triple Overlap (Δ = 3, k = 2) Min L1 Cost = {tw2Cost}"
 
+  IO.println "\n=== Next-Gen ℓ₁ Quantization (Hadamard H₄ Incoherence & 2-Stage Residual) ==="
+  let outlierVec : ℚ × ℚ × ℚ × ℚ := (100/1, 0/1, 0/1, 0/1)
+  let rotated := MarkovL1NextGenQuantizer.hadamard4Q outlierVec
+  IO.println s!"  Hadamard H₄ Outlier Dispersion : {outlierVec} -> {rotated}"
+  let (_, err1, err2) := MarkovL1NextGenQuantizer.quantizeResidual2StageQ
+    [1/10, -1/10, 4/1, -4/1, 10/1, 20/1]
+  IO.println s!"  2-Stage Residual Cascade (3.16b): Stage-1 L1 Err = {err1} -> Stage-2 L1 Err = {err2}"
+
+
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
   let tokens := csv.splitOn ","
