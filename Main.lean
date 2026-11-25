@@ -18,6 +18,7 @@ import MarkovL1EntropyAndSparsity
 import MarkovL1MoERoutingAndDynamicBits
 import MarkovL1ZeroKnowledgeInferenceCert
 import MarkovL1HCPAndBirkhoffQuantizer
+import MarkovL1FullTransformerCert
 
 
 
@@ -172,6 +173,28 @@ def runDemo : IO Unit := do
   IO.println s!"  3HCP Lattice Quantizer (13-pt) : (3, -3, 0) -> {q3hcp}"
   let bjOrth := MarkovL1HCPAndBirkhoffQuantizer.checkBirkhoffL1OrthogonalQ [2/1, -2/1, 0/1, 0/1] [1/2, 1/2, 1/4, -1/4]
   IO.println s!"  Birkhoff–James ℓ₁-Orthogonality: {bjOrth}"
+
+  IO.println "\n=== V-CORE v4.0: W32 Cascade, LUT Kernel, Mixed-Lattice & E2E Transformer Cert ==="
+  let v8 : MarkovL1FullTransformerCert.Vec8Q := ⟨1/2, -1/2, 1/4, 3/4, -1/4, 1/2, 0, -1/2⟩
+  let v16 : MarkovL1FullTransformerCert.Vec16Q := (v8, MarkovL1FullTransformerCert.scaleVec8Q (-1) v8)
+  let v32 : MarkovL1FullTransformerCert.Vec32Q := (v16, v16)
+  let rot32 := MarkovL1FullTransformerCert.dot32Q
+    (MarkovL1FullTransformerCert.walshHadamard32Q v32)
+    (MarkovL1FullTransformerCert.walshHadamard32Q v32) / 32
+  IO.println s!"  Cascade W32 In-Domain Dot/32   : {rot32}"
+  let plan : List MarkovL1FullTransformerCert.MixedLatticeLayerSpec := [
+    { layerName := "attn.v_proj (D4)", bpw := 1161/1000, paramCount := 10/1, holderDriftBound := 1/100 },
+    { layerName := "mlp.gate_proj (Leech Λ24)", bpw := 733/1000, paramCount := 50/1, holderDriftBound := 3/100 },
+    { layerName := "mlp.up_proj (Leech Λ24)", bpw := 733/1000, paramCount := 50/1, holderDriftBound := 3/100 }
+  ]
+  let mixedOK := MarkovL1FullTransformerCert.verifyMixedLatticePlanQ plan (80/100) (1/10)
+  IO.println s!"  Mixed-Lattice Plan (≤0.80 bpw) : certified={mixedOK}"
+  let blockBudget : MarkovL1FullTransformerCert.TransformerBlockErrorBudget := {
+    δ_x := 1/100, L_norm := 1/1, ε_qkv := 1/200, ε_o := 1/200,
+    ε_K := 1/100, ε_V := 1/100, L_sm := 1/2, ε_mlp := 1/100,
+    L_act := 1/1, B_X := 2/1
+  }
+  IO.println s!"  E2E Transformer Block Drift    : ≤ {MarkovL1FullTransformerCert.transformerBlockTotalDriftQ blockBudget}"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
