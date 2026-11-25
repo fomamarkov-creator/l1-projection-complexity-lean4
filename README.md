@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (21 Core Libraries + Standalone CLI)
+## Verified Modules (22 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -101,7 +101,12 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `markov_leeway_gap_exact` & `registerInversion_exact_decomposition`: formalizes the rational leeway invariant $Le_0 = \frac{256}{250} - 1 = \frac{3}{125} = 0.024$ and lossless outlier isolation into high-precision registers.
       - `birkhoff_l1_orthogonality_sufficient`: proves that sign-balanced subgradients guarantee $\Vert\hat{w} + t \cdot e\Vert_1 \ge \Vert\hat{w}\Vert_1$ for all $t \in \mathbb{Q}$ (Birkhoff–James $\ell_1$-orthogonality).
       - 
-
+22. **`MarkovL1FullTransformerCert.lean` (V-CORE v4.0 Master End-to-End Transformer & 32D Lattice Core):**
+    - **32D Cascade Walsh–Hadamard Rotations (`walshHadamard16Q`, `walshHadamard32Q`) & Barnes–Wall `Λ₃₂`:** Proves exact involutivity `W₃₂(W₃₂(v)) = 32 · v` and in-domain dot-product preservation `(W₃₂ w) · (W₃₂ x) = 32 (w · x)` over `ℚ` without irrational square roots (`in_domain_hadamard32_exact_dot`), plus rational shell verification `isBarnesWall32ShellQ`.
+    - **Direct Lattice LUT Kernel Soundness (`lutBlockInference8Q_sound`):** Proves that Shared-Memory / AVX2 lookup-table inference over lattice indices is algebraically identical to full-precision dot products without FP16 unpacking.
+    - **Mixed-Lattice Layer Budget Certifier (`verifyMixedLatticePlanQ`):** Guarantees heterogeneous lattice assignment (`Λ₂₄ 0.733b`, `E₈ 0.989b`, `D₄ 1.161b`, `1.58b`) stays within a target average bitrate (`≤ B_target`) and Hölder error budget (`mixed_lattice_plan_certified`).
+    - **End-to-End Transformer Block Stability (`transformer_block_e2e_certified_bound`):** Composes sub-1-bit weight drift, 2-bit KV-cache bounds (`ε_K`, `ε_V`), Lipschitz Softmax/RMSNorm/SwiGLU constants, and residual skip connections into a single input-to-output Transformer block guarantee.
+    
 ---
 
 ## Build & Run
@@ -110,4 +115,6 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
 lake exe cache get
 lake build
 lake exe l1solver --demo
+lake build MarkovL1FullTransformerCert
+
 ```
