@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (20 Core Libraries + Standalone CLI)
+## Verified Modules (21 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -95,6 +95,13 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `matMul_vec_assoc` & `verifyMatMulFreivaldsQ`: $O(n^2)$ Freivalds algebraic verification of claimed matrix products $C = A B$.
       - `vcore_full_pipeline_master_bound`: master theorem unifying lattice quantization ($D_4$/$E_8$/$\Lambda_{24}$) and data-free $\ell_1$-LoRA residual compensation into a single end-to-end neuron output error guarantee.
       -
+21. **MarkovL1HCPAndBirkhoffQuantizer.lean *(New)*:**
+    - Adapts 3D Hexagonal Close-Packed (3HCP) lattice geometry, modular register inversion, and Banach-space orthogonality into exact-rational ($\mathbb{Q}$) quantization:
+      - `hcp3DAlphabet_verified`: machine-checked verification of the 13-element 3HCP coordination shell ($\approx 1.233$ bits/weight).
+      - `markov_leeway_gap_exact` & `registerInversion_exact_decomposition`: formalizes the rational leeway invariant $Le_0 = \frac{256}{250} - 1 = \frac{3}{125} = 0.024$ and lossless outlier isolation into high-precision registers.
+      - `birkhoff_l1_orthogonality_sufficient`: proves that sign-balanced subgradients guarantee $\Vert\hat{w} + t \cdot e\Vert_1 \ge \Vert\hat{w}\Vert_1$ for all $t \in \mathbb{Q}$ (Birkhoff–James $\ell_1$-orthogonality).
+      - 
+
 ---
 
 ## Build & Run
