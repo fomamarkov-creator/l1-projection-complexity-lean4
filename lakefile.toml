@@ -57,3 +57,6 @@ name = "MarkovL1SuperQuantizer"
 
 [[lean_lib]]
 name = "MarkovL1UltimateE8Engine"
+
+[[lean_lib]]
+name = "MarkovL1AttentionKVCache"
