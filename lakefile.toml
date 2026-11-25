@@ -49,3 +49,5 @@ name = "MarkovL1TriangularActivation"
 [[lean_lib]]
 name = "MarkovL1GeneralTreewidthFPT"
 
+[[lean_lib]]
+name = "MarkovL1NextGenQuantizer"
