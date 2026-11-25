@@ -79,3 +79,5 @@ name = "MarkovL1HCPAndBirkhoffQuantizer"
 [[lean_lib]]
 name = "MarkovL1FullTransformerCert"
 
+[[lean_lib]]
+name = "MarkovL1RoPEAndGolaySyndrome"
