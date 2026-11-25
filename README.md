@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (16 Core Libraries + Standalone CLI)
+## Verified Modules (17 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -74,7 +74,12 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `attention_logit_drift_bound` & `attention_value_drift_bound`: end-to-end error certificates for quantized Key ($\hat{K}$) and Value ($\hat{V}$) tensors in Transformer attention.
       - 
 
-
+17. **MarkovL1LeechAndLowRank.lean *(New)*:**
+    - Reaches the 24-dimensional sphere-packing limit ($\Lambda_{24}$, $\approx 0.733$ bits/weight) and formalizes data-free low-rank $\ell_1$ residual compensation:
+      - `golay24_code_verified`: machine-checked verification of all $2^{12} = 4096$ codewords of the extended binary Golay code $\mathcal{G}_{24}$ with minimum Hamming weight $d_{\min} = 8$.
+      - `projectLeech24OctadQ`: constructive 24D Leech lattice quantizer in scaled rational arithmetic ($8 \cdot \Lambda_{24} \subset \mathbb{Z}^{24}$).
+      - `rank1_weighted_median_identity`: exact factorization reducing matrix rank-$1$ $\ell_1$-LoRA residual updates ($E \approx u v^T$) to 1D weighted medians.
+      
 ---
 
 ## Build & Run
