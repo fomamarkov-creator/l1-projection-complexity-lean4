@@ -3,6 +3,20 @@ import Mathlib.Data.List.Sort
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
+/-!
+# MarkovL1TernaryQuantizer.lean
+
+* **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **Repository:** https://github.com/fomamarkov-creator/l1-projection-complexity-lean4
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
+* **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
+
+## Overview
+# Certified 1.58-Bit Ternary Neural Network Quantizer ({-1, 0, +1} over ℚ)
+-/
+
+
 namespace MarkovL1TernaryQuantizer
 
 /-- 1.58-bit тернарное квантование скаляра w ∈ ℚ при пороге θ ≥ 0 и масштабе α ≥ 0:
