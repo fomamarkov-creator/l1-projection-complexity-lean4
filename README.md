@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (15 Core Libraries + Standalone CLI)
+## Verified Modules (16 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -67,6 +67,13 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `triangular_e8_residual_identity`: fuses $E_8$ lattice quantization with Cholesky/QR activation error feedback.
       - `deep_network_l1_error_bound`: end-to-end compositional $\ell_1$ logit-drift certification across $L$-layer deep neural networks.
       - 
+16. **MarkovL1AttentionKVCache.lean *(New)*:**
+    - Formalizes multiplier-free in-domain Walsh–Hadamard inference and certified Attention KV-Cache compression:
+      - `in_domain_hadamard_exact_dot`: proves $(W_8 w) \cdot (W_8 x) = 8 (w \cdot x)$, eliminating inverse weight transforms at runtime.
+      - `holder_l1_linf_bound`: exact $\ell_1$-$\ell_\infty$ Hölder drift bound for quantized linear projections.
+      - `attention_logit_drift_bound` & `attention_value_drift_bound`: end-to-end error certificates for quantized Key ($\hat{K}$) and Value ($\hat{V}$) tensors in Transformer attention.
+      - 
+
 
 ---
 
