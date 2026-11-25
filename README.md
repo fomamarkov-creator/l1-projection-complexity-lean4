@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (14 Core Libraries + Standalone CLI)
+## Verified Modules (15 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -60,6 +60,14 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `hadamard4Q_l1_bound`: proves inverse Hadamard distortion amplification is bounded by $2\times$ in $\ell_1$.
       - `superQuantize4Q_certified_bound`: end-to-end formal guarantee that restored weights in the original neural network basis satisfy $\|w - \hat{w}\|_1 \le \varepsilon_{\text{cert}}$.
       - 
+15. **MarkovL1UltimateE8Engine.lean *(New)*:**
+    - Pushes certified exact-rational ($\mathbb{Q}$) quantization below the $1$-bit-per-weight barrier ($\approx 0.989\text{ b/w}$) and proves full-network stability guarantees:
+      - `e8Alphabet_all_valid`: machine-checked verification of all $241$ rational points of the 8D $E_8$ root shell ($0 + 112$ integer roots $+ 128$ spinor roots).
+      - `walshHadamard8Q_involutive`: exact rational $8 \times 8$ Walsh–Hadamard transform ($W_8(W_8(v)) = 8v$ without irrational $\sqrt{8}$).
+      - `triangular_e8_residual_identity`: fuses $E_8$ lattice quantization with Cholesky/QR activation error feedback.
+      - `deep_network_l1_error_bound`: end-to-end compositional $\ell_1$ logit-drift certification across $L$-layer deep neural networks.
+      - 
+
 ---
 
 ## Build & Run
