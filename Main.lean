@@ -11,6 +11,7 @@ import MarkovL1TriangularActivation
 import MarkovL1GeneralTreewidthFPT
 import MarkovL1NextGenQuantizer
 import MarkovL1SuperQuantizer
+import MarkovL1UltimateE8Engine
 
 
 
@@ -134,6 +135,11 @@ def runDemo : IO Unit := do
   IO.println "\n=== V-CORE Super-Quantizer (Hadamard H₄ + D₄ Lattice + Adaptive Cascade) ==="
   let sqOut := MarkovL1SuperQuantizer.superQuantize4Q (2/1) (10/1, -2/1, 3/1, -1/1)
   IO.println s!"  Adaptive SuperQuantizer (Hard Block): mode={repr sqOut.mode}, rotErr={sqOut.rotatedErr}, maxCertErr={sqOut.certifiedMaxOutputErr}"
+
+  IO.println "\n=== V-CORE Sub-1-Bit E₈ Lattice & Multi-Layer Network Certification ==="
+  IO.println s!"  E₈ Root Lattice Alphabet Size   : {MarkovL1UltimateE8Engine.e8Alphabet.length} states (~0.989 bits/weight)"
+  let netBound := MarkovL1UltimateE8Engine.networkErrorBoundQ (10/1) [(1/2, 1/100), (1/2, 1/100), (1/2, 1/100)]
+  IO.println s!"  3-Layer Certified L1 Logit Bound: {netBound}"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
