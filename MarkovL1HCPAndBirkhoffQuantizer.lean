@@ -209,13 +209,13 @@ theorem birkhoff_l1_orthogonality_sufficient (wHat e : List ℚ)
     unfold absQ at hbal ⊢
     by_cases ht : 0 ≤ t <;> by_cases hA : 0 ≤ A
     · simp [ht, hA]
-    · have hA' : A < 0 := lt_of_not_ge hA
-      simp [ht, hA]; nlinarith
-    · have ht' : t < 0 := lt_of_not_ge ht
-      simp [ht, hA]; nlinarith
+      exact mul_nonneg ht hA
+    · simp [ht, hA]
+    · simp [ht, hA]
     · have ht' : t < 0 := lt_of_not_ge ht
       have hA' : A < 0 := lt_of_not_ge hA
       simp [ht, hA]
+      exact mul_nonneg_of_nonpos_of_nonpos (le_of_lt ht') (le_of_lt hA')
   have h_prod : absQ t * absQ A ≤ absQ t * Z :=
     mul_le_mul_of_nonneg_left hbal (absQ_nonneg t)
   linarith
