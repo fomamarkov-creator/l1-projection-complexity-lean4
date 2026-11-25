@@ -9,6 +9,9 @@ import MarkovL1TreewidthSolver
 import MarkovL1ContinuousChainDP
 import MarkovL1TriangularActivation
 import MarkovL1GeneralTreewidthFPT
+import MarkovL1NextGenQuantizer
+
+
 
 /-!
 # Main.lean
