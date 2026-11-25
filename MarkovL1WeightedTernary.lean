@@ -2,6 +2,20 @@ import Mathlib.Data.Rat.Lemmas
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
+/-!
+# MarkovL1WeightedTernary.lean
+
+* **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **Repository:** https://github.com/fomamarkov-creator/l1-projection-complexity-lean4
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
+* **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
+
+## Overview
+# Certified Activation-Weighted 1.58-Bit Ternary Quantizer over Exact Rationals ℚ
+-/
+
+
 namespace MarkovL1WeightedTernary
 
 /-- Взвешенная пара (вес нейросети w, важность канала γ ≥ 0) в точных дробях ℚ -/
