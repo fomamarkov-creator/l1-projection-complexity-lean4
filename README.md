@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (12 Core Libraries + Standalone CLI)
+## Verified Modules (13 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -48,6 +48,12 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
 12. **MarkovL1GeneralTreewidthFPT.lean *(New)*:**
     - Extends bounded-treewidth dynamic programming from chains (`k = 1, Δ = 2`) to treewidth `k = 2` (`Δ = 3`) triple-overlap graphs (`solveTripleOverlapFPT` in `O(m |G|³)` time), modeling joint quantization of coupled transformer projections (`W_Q, W_K, W_V`).
 
+13. **MarkovL1NextGenQuantizer.lean *(New)*:**
+    - Formalizes next-generation exact-rational ($\mathbb{Q}$) $\ell_1$ quantization primitives beyond symmetric blockwise 1.58-bit scaling:
+      - `hadamard4Q_involutive` & `hadamard4Q_dot_invariant`: rational $4 \times 4$ Walsh–Hadamard incoherence rotation (normalized by $1/2$, avoiding irrational $\sqrt{2}$) that preserves inner products while dispersing heavy-tailed channel outliers.
+      - `asymBlockErrorQ_split`: decoupled positive/negative threshold and median scale optimization over the asymmetric ternary alphabet $\{-\alpha_-, 0, +\alpha_+\}$.
+      - `residual_cascade_error_eq` & `quantizeResidual2StageQ`: two-stage residual ternary cascade ($w \approx \hat{w}_1 + \hat{w}_2$, $3.16$ bits/weight without multiplications) with machine-checked residual error reduction.
+      - 
 ---
 
 ## Build & Run
