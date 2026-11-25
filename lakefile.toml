@@ -55,3 +55,5 @@ name = "MarkovL1NextGenQuantizer"
 [[lean_lib]]
 name = "MarkovL1SuperQuantizer"
 
+[[lean_lib]]
+name = "MarkovL1UltimateE8Engine"
