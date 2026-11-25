@@ -75,3 +75,7 @@ name = "MarkovL1ZeroKnowledgeInferenceCert"
 
 [[lean_lib]]
 name = "MarkovL1HCPAndBirkhoffQuantizer"
+
+[[lean_lib]]
+name = "MarkovL1FullTransformerCert"
+
