@@ -1,6 +1,20 @@
 import Mathlib.Data.Rat.Lemmas
 import Mathlib.Tactic.Linarith
 
+/-!
+# MarkovL1TreewidthSolver.lean
+
+* **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **Repository:** https://github.com/fomamarkov-creator/l1-projection-complexity-lean4
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
+* **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
+
+## Overview
+# Fixed-Parameter Tractable (FPT) Dynamic Programming Solver for Δ = 2 Chain Overlaps
+-/
+
+
 namespace MarkovL1TreewidthSolver
 
 /-- Ленточный граф перекрытий Δ = 2 (цепочка соседних взаимодействий w_i + w_{i+1},
