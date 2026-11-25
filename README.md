@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (13 Core Libraries + Standalone CLI)
+## Verified Modules (14 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -53,6 +53,12 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `hadamard4Q_involutive` & `hadamard4Q_dot_invariant`: rational $4 \times 4$ Walsh–Hadamard incoherence rotation (normalized by $1/2$, avoiding irrational $\sqrt{2}$) that preserves inner products while dispersing heavy-tailed channel outliers.
       - `asymBlockErrorQ_split`: decoupled positive/negative threshold and median scale optimization over the asymmetric ternary alphabet $\{-\alpha_-, 0, +\alpha_+\}$.
       - `residual_cascade_error_eq` & `quantizeResidual2StageQ`: two-stage residual ternary cascade ($w \approx \hat{w}_1 + \hat{w}_2$, $3.16$ bits/weight without multiplications) with machine-checked residual error reduction.
+     -
+14. **MarkovL1SuperQuantizer.lean *(New)*:**
+    - Unifies Hadamard $H_4$ incoherence rotation, $D_4$ root lattice vector quantization ($\approx 1.16$ bits/weight, 25 verified root states), asymmetric ternary scales, and two-stage residual cascades into an adaptive self-certifying super-quantizer (`superQuantize4Q`):
+      - `d4Alphabet_all_valid`: machine-checked verification of the 25-element $D_4$ root shell alphabet.
+      - `hadamard4Q_l1_bound`: proves inverse Hadamard distortion amplification is bounded by $2\times$ in $\ell_1$.
+      - `superQuantize4Q_certified_bound`: end-to-end formal guarantee that restored weights in the original neural network basis satisfy $\|w - \hat{w}\|_1 \le \varepsilon_{\text{cert}}$.
       - 
 ---
 
