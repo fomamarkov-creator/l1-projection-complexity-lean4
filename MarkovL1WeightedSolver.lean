@@ -5,6 +5,8 @@ import MarkovL1Solver
 # General Certified Block-Median ℓ₁ Projection Solver (Arbitrary Block Sizes, Δ = 1)
 
 * **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **Repository:** https://github.com/fomamarkov-creator/l1-projection-complexity-lean4
 * **License:** GNU Affero General Public License v3.0 (AGPLv3)
 * **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
 
