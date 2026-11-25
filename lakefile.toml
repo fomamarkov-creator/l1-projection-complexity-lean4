@@ -72,3 +72,6 @@ name = "MarkovL1MoERoutingAndDynamicBits"
 
 [[lean_lib]]
 name = "MarkovL1ZeroKnowledgeInferenceCert"
+
+[[lean_lib]]
+name = "MarkovL1HCPAndBirkhoffQuantizer"
