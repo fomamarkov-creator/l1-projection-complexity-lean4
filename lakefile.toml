@@ -63,3 +63,12 @@ name = "MarkovL1AttentionKVCache"
 
 [[lean_lib]]
 name = "MarkovL1LeechAndLowRank"
+
+[[lean_lib]]
+name = "MarkovL1EntropyAndSparsity"
+
+[[lean_lib]]
+name = "MarkovL1MoERoutingAndDynamicBits"
+
+[[lean_lib]]
+name = "MarkovL1ZeroKnowledgeInferenceCert"
