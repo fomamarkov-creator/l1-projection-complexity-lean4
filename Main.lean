@@ -21,7 +21,6 @@ import MarkovL1HCPAndBirkhoffQuantizer
 import MarkovL1FullTransformerCert
 import MarkovL1RoPEAndGolaySyndrome
 
-
 /-!
 # Main.lean
 
@@ -30,10 +29,6 @@ import MarkovL1RoPEAndGolaySyndrome
 * **Repository:** https://github.com/fomamarkov-creator/l1-projection-complexity-lean4
 * **License:** GNU Affero General Public License v3.0 (AGPLv3)
 * **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
-
-## Overview
-# Standalone Certified CLI Solver and Benchmark Suite (l1solver)
-
 -/
 
 open MarkovL1Complexity
@@ -41,7 +36,6 @@ open MarkovL1Solver
 open MarkovL1WeightedSolver
 open MarkovL1TernaryQuantizer
 
-/-- Разбор списка рациональных чисел (целых или дробей вида `a/b`) из строки -/
 def parseRatToken (s : String) : Option ℚ :=
   let clean := s.trimAscii.toString
   match clean.splitOn "/" with
@@ -53,7 +47,6 @@ def parseRatToken (s : String) : Option ℚ :=
       | _, _ => none
   | _ => none
 
-/-- Вывод справки по использованию консольного сертифицированного решателя -/
 def printHelp : IO Unit := do
   IO.println "==================================================================="
   IO.println " Certified ℓ₁ Metric Projection Solver (Lean 4 Verified Engine)"
@@ -62,11 +55,7 @@ def printHelp : IO Unit := do
   IO.println "Usage:"
   IO.println "  l1solver --demo                  Run built-in certified benchmarks"
   IO.println "  l1solver --dipole <x0,x1,...>    Solve decoupled dipole pairs (Δ = 1)"
-  IO.println "                                   on adjacent pairs {0,1}, {2,3}, ..."
-  IO.println "Example:"
-  IO.println "  l1solver --dipole 10,4,-6,2"
 
-/-- Запуск встроенных сертифицированных тестов по всем модулям -/
 def runDemo : IO Unit := do
   IO.println "=== Certified Dipole Solver (Δ = 1, O(m) exact rationals) ==="
   match solveDipoleBlockProjection exampleDipoleCfg exampleInput with
@@ -112,7 +101,6 @@ def runDemo : IO Unit := do
   IO.println "\n=== Certified Bounded-Treewidth (Δ = 2) FPT Solver ==="
   let fptCost := MarkovL1TreewidthSolver.solveChainOverlapFPT [-4, 0, 4] [4, 8, 4]
   IO.println s!"  Chain Overlap (Δ = 2) Min L1 Cost = {fptCost}"
-
   IO.println "\n=== Certified Continuous Chain DP (Δ = 2, Grid-Free over ℚ^m) ==="
   let (contCs, contCost) := MarkovL1ContinuousChainDP.solveContinuousChainDP [4/1, 8/1, 4/1]
   let contCert := MarkovL1ContinuousChainDP.checkChainOptimalCertQ
@@ -175,13 +163,10 @@ def runDemo : IO Unit := do
   IO.println s!"  Birkhoff–James ℓ₁-Orthogonality: {bjOrth}"
 
   IO.println "\n=== V-CORE v4.0: W32 Cascade, LUT Kernel, Mixed-Lattice & E2E Transformer Cert ==="
-    IO.println "\n=== V-CORE v4.0: W32 Cascade, LUT Kernel, Mixed-Lattice & E2E Transformer Cert ==="
   let v8 : MarkovL1FullTransformerCert.Vec8Q := ⟨1/2, -1/2, 1/4, 3/4, -1/4, 1/2, 0, -1/2⟩
   let v16 : MarkovL1FullTransformerCert.Vec16Q := (v8, MarkovL1FullTransformerCert.scaleVec8Q (-1) v8)
   let v32 : MarkovL1FullTransformerCert.Vec32Q := (v16, v16)
-  let rot32 := MarkovL1FullTransformerCert.dot32Q
-    (MarkovL1FullTransformerCert.walshHadamard32Q v32)
-    (MarkovL1FullTransformerCert.walshHadamard32Q v32) / 32
+  let rot32 := MarkovL1FullTransformerCert.dot32Q (MarkovL1FullTransformerCert.walshHadamard32Q v32) (MarkovL1FullTransformerCert.walshHadamard32Q v32) / 32
   IO.println s!"  Cascade W32 In-Domain Dot/32   : {rot32}"
   let plan : List MarkovL1FullTransformerCert.MixedLatticeLayerSpec := [
     { layerName := "attn.v_proj (D4)", bpw := 1161/1000, paramCount := 10/1, holderDriftBound := 1/100 },
@@ -207,7 +192,6 @@ def runDemo : IO Unit := do
   let synErr := MarkovL1RoPEAndGolaySyndrome.syndromeGolay24 err
   IO.println s!"  Golay G₂₄ Syndrome Invariance  : clean={synClean}, noisy={synNoisy}, errOnly={synErr}"
 
-/-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
   let tokens := csv.splitOn ","
   let parsed := tokens.filterMap parseRatToken
