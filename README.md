@@ -12,7 +12,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (17 Core Libraries + Standalone CLI)
+## Verified Modules (20 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -79,7 +79,22 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
       - `golay24_code_verified`: machine-checked verification of all $2^{12} = 4096$ codewords of the extended binary Golay code $\mathcal{G}_{24}$ with minimum Hamming weight $d_{\min} = 8$.
       - `projectLeech24OctadQ`: constructive 24D Leech lattice quantizer in scaled rational arithmetic ($8 \cdot \Lambda_{24} \subset \mathbb{Z}^{24}$).
       - `rank1_weighted_median_identity`: exact factorization reducing matrix rank-$1$ $\ell_1$-LoRA residual updates ($E \approx u v^T$) to 1D weighted medians.
-      
+      -
+18. **MarkovL1EntropyAndSparsity.lean *(New)*:**
+    - Combines lossless prefix entropy compression with hardware-accelerated 2:4 structured sparsity:
+      - `sampleCodebook_kraft_exact`: verifies prefix-free codebooks saturating Kraft's inequality ($\sum 2^{-l_i} = 1$), reducing effective bitrates below $0.5$ bits/weight.
+      - `quantize24Sparse_at_most_two_nonzeros`: exact combinatorial $\ell_1$ solver over all $\binom{4}{2} = 6$ hardware 2:4 masks per 4-element block, certified to keep at most 2 non-zeros (`nnz ≤ 2`).
+
+19. **MarkovL1MoERoutingAndDynamicBits.lean *(New)*:**
+    - Formalizes Mixture-of-Experts (MoE) routing stability and optimal layerwise mixed-precision bit allocation:
+      - `verifyMoERoutingSafety_sound`: proves Top-$K$ expert selection invariance under gate quantization whenever $g_i - g_j > \delta_i + \delta_j$.
+      - `solveMixedPrecisionDPQ_budget_sound`: exact dynamic programming solver assigning bitwidths ($E_8$, $D_4$, 1.58-bit, 3.16-bit) across layers with machine-checked memory budget compliance.
+
+20. **MarkovL1ZeroKnowledgeInferenceCert.lean *(New)*:**
+    - Completes the 20-module verified stack with fast inference integrity verification and a unified hybrid pipeline bound:
+      - `matMul_vec_assoc` & `verifyMatMulFreivaldsQ`: $O(n^2)$ Freivalds algebraic verification of claimed matrix products $C = A B$.
+      - `vcore_full_pipeline_master_bound`: master theorem unifying lattice quantization ($D_4$/$E_8$/$\Lambda_{24}$) and data-free $\ell_1$-LoRA residual compensation into a single end-to-end neuron output error guarantee.
+      -
 ---
 
 ## Build & Run
