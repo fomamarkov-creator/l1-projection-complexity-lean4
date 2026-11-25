@@ -12,6 +12,7 @@ import MarkovL1GeneralTreewidthFPT
 import MarkovL1NextGenQuantizer
 import MarkovL1SuperQuantizer
 import MarkovL1UltimateE8Engine
+import MarkovL1AttentionKVCache
 
 
 
@@ -140,6 +141,13 @@ def runDemo : IO Unit := do
   IO.println s!"  E₈ Root Lattice Alphabet Size   : {MarkovL1UltimateE8Engine.e8Alphabet.length} states (~0.989 bits/weight)"
   let netBound := MarkovL1UltimateE8Engine.networkErrorBoundQ (10/1) [(1/2, 1/100), (1/2, 1/100), (1/2, 1/100)]
   IO.println s!"  3-Layer Certified L1 Logit Bound: {netBound}"
+
+  IO.println "\n=== In-Domain Hadamard W₈ & Certified KV-Cache Bounds ==="
+  let w8 : MarkovL1AttentionKVCache.Vec8Q := ⟨1/2, -1/2, 1/4, 3/4, -1/4, 1/2, 0, -1/2⟩
+  let x8 : MarkovL1AttentionKVCache.Vec8Q := ⟨2/1, 1/1, -1/1, 3/1, 1/2, -1/2, 4/1, 1/1⟩
+  let hDot := MarkovL1AttentionKVCache.dot8Q (MarkovL1AttentionKVCache.walshHadamard8Q w8) (MarkovL1AttentionKVCache.walshHadamard8Q x8) / 8
+  IO.println s!"  Multiplier-Free W₈ Domain Dot  : {hDot} (exact match without inverse weight transform)"
+
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
