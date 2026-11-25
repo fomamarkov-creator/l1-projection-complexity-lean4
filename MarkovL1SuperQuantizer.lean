@@ -116,11 +116,13 @@ theorem d4Alphabet_all_valid :
 def scaleVec4Z (α : ℚ) (z : Vec4Z) : Vec4Q :=
   (α * (z.1 : ℚ), α * (z.2.1 : ℚ), α * (z.2.2.1 : ℚ), α * (z.2.2.2 : ℚ))
 
-def insertRat (x : ℚ) : List ℚ → List ℚ
+def insertRat (x : ℚ) (xs : List ℚ) : List ℚ :=
+  match xs with
   | [] => [x]
   | y :: ys => if x ≤ y then x :: y :: ys else y :: insertRat x ys
 
-def sortRat : List ℚ → List ℚ
+def sortRat (xs : List ℚ) : List ℚ :=
+  match xs with
   | [] => []
   | x :: xs => insertRat x (sortRat xs)
 
@@ -128,16 +130,21 @@ def exactMedianQ (xs : List ℚ) : ℚ :=
   let s := sortRat xs
   s.getD (s.length / 2) 0
 
+def isCloser4Q (target cand best : Vec4Q) : Bool :=
+  decide (l1Dist4Q target cand < l1Dist4Q target best)
+
 /-- Решётчатый D₄-квантователь четвёрки весов над ℚ (~1.16 бита/вес) -/
 def quantizeD4BlockQ (v : Vec4Q) : Vec4Q :=
   let mags := [absQ v.1, absQ v.2.1, absQ v.2.2.1, absQ v.2.2.2].filter (fun m => decide (0 < m))
   let α := exactMedianQ mags
   let cands := d4Alphabet.map (scaleVec4Z α)
-  cands.foldl (-- =========================================================================
+  cands.foldl (fun best c => if isCloser4Q v c best then c else best) (0, 0, 0, 0)
+-- =========================================================================
 -- 3. АСИММЕТРИЧНЫЙ 1.58b И 2-СТУПЕНЧАТЫЙ ОСТАТОЧНЫЙ КАСКАД НА ЧЕТВЁРКАХ
 -- =========================================================================
 
-def toList4 (v : Vec4Q) : List ℚ := [v.1, v.2.1, v.2.2.1, v.2.2.2]
+def toList4 (v : Vec4Q) : List ℚ :=
+  [v.1, v.2.1, v.2.2.1, v.2.2.2]
 
 /-- Асимметричный 1.58-битный квантователь {-α_neg, 0, +α_pos} с медианными масштабами -/
 def quantizeAsym4Q (v : Vec4Q) : Vec4Q :=
@@ -177,12 +184,7 @@ structure SuperQuantOutput where
   certifiedMaxOutputErr : ℚ
   deriving Repr
 
-/-- Главный алгоритм V-CORE Super-Quantizer:
-    1. Вращает блок весов преобразованием Адамара H₄ для подавления выбросов;
-    2. Пробует сверхплотную решётку D₄ (1.16 бита/вес); если ошибка ≤ ε, фиксирует её;
-    3. Иначе пробует асимметричный 1.58-bit; если ошибка ≤ ε, фиксирует его;
-    4. Иначе активирует 2-ступенчатый остаточный каскад (3.16 бита);
-    5. Возвращает квантованный вектор в исходном базисе и сертифицированную границу ошибки. -/
+/-- Главный алгоритм V-CORE Super-Quantizer -/
 def superQuantize4Q (ε : ℚ) (w : Vec4Q) : SuperQuantOutput :=
   let wRot := hadamard4Q w
   let qD4 := quantizeD4BlockQ wRot
@@ -211,9 +213,7 @@ def superQuantize4Q (ε : ℚ) (w : Vec4Q) : SuperQuantOutput :=
         rotatedErr := errRes
         certifiedMaxOutputErr := 2 * errRes }
 
-/-- Главная теорема сквозной корректности Суперквантователя:
-    реальная ℓ₁-ошибка восстановленных весов `‖w - out.restoredWeights‖₁` в исходном
-    базисе нейросети ГАРАНТИРОВАННО не превосходит `out.certifiedMaxOutputErr`! -/
+/-- Главная теорема сквозной корректности Суперквантователя -/
 theorem superQuantize4Q_certified_bound (ε : ℚ) (w : Vec4Q) :
     let out := superQuantize4Q ε w
     l1Dist4Q w out.restoredWeights ≤ out.certifiedMaxOutputErr := by
@@ -237,13 +237,13 @@ theorem superQuantize4Q_certified_bound (ε : ℚ) (w : Vec4Q) :
 -- =========================================================================
 
 #eval
-  let out1 := superQuantize4Q (1/10) (100/1, 0/1, 0/1, 0/1)
+  let out1 := superQuantize4Q (1/10) (100/1, 0/1, 0/1, 0/1);
   s!"[Scenario 1: Extreme Outlier] mode={repr out1.mode}, rotErr={out1.rotatedErr}, restored={out1.restoredWeights}"
 
 #eval
-  let w2 : Vec4Q := (10/1, -2/1, 3/1, -1/1)
-  let out2 := superQuantize4Q (2/1) w2
-  let actualErr := l1Dist4Q w2 out2.restoredWeights
+  let w2 : Vec4Q := (10/1, -2/1, 3/1, -1/1);
+  let out2 := superQuantize4Q (2/1) w2;
+  let actualErr := l1Dist4Q w2 out2.restoredWeights;
   s!"[Scenario 2: Hard Block] mode={repr out2.mode}, actualErr={actualErr} ≤ certBound={out2.certifiedMaxOutputErr}"
 
 end MarkovL1SuperQuantizer
@@ -251,4 +251,3 @@ end MarkovL1SuperQuantizer
 #print axioms MarkovL1SuperQuantizer.d4Alphabet_all_valid
 #print axioms MarkovL1SuperQuantizer.hadamard4Q_l1_bound
 #print axioms MarkovL1SuperQuantizer.superQuantize4Q_certified_bound
-best c => if l1Dist4Q v c < l1Dist4Q v best then c else best) (0, 0, 0, 0)
