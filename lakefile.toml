@@ -60,3 +60,6 @@ name = "MarkovL1UltimateE8Engine"
 
 [[lean_lib]]
 name = "MarkovL1AttentionKVCache"
+
+[[lean_lib]]
+name = "MarkovL1LeechAndLowRank"
