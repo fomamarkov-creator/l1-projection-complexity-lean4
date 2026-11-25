@@ -5,6 +5,20 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 
+/-!
+# MarkovL1TriangularActivation.lean
+
+* **Author:** E. S. Markov (ORCID: 0009-0005-2235-5464)
+* **Affiliation:** Independent Researcher, Astrakhan, Russia
+* **Repository:** https://github.com/fomamarkov-creator/l1-projection-complexity-lean4
+* **License:** GNU Affero General Public License v3.0 (AGPLv3)
+* **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
+
+## Overview
+# Certified Upper-Triangular Cholesky/QR Activation Error Feedback for Correlated Channels
+-/
+
+
 open Finset BigOperators
 
 namespace MarkovL1TriangularActivation
