@@ -14,6 +14,9 @@ import MarkovL1SuperQuantizer
 import MarkovL1UltimateE8Engine
 import MarkovL1AttentionKVCache
 import MarkovL1LeechAndLowRank
+import MarkovL1EntropyAndSparsity
+import MarkovL1MoERoutingAndDynamicBits
+import MarkovL1ZeroKnowledgeInferenceCert
 
 
 
@@ -154,6 +157,14 @@ def runDemo : IO Unit := do
   let E_res : List (List ℚ) := [[2/1, 4/1, 6/1], [-1/1, -2/1, -3/1]]
   let u_opt := MarkovL1LeechAndLowRank.updateLeftFactorL1Q E_res [1/1, 2/1, 3/1]
   IO.println s!"  Data-Free ℓ₁-LoRA Rank-1 Factor: u*={u_opt} (exact residual elimination)"
+
+  IO.println "\n=== Prefix Entropy Coding, 2:4 Sparsity, MoE Safety & O(n²) Inference Cert ==="
+  let q24 := MarkovL1EntropyAndSparsity.quantize24SparseTernaryQ (10/1, -2/1, 8/1, -1/1)
+  IO.println s!"  Hardware 2:4 Sparse L1 Block   : {q24} (nnz = {MarkovL1EntropyAndSparsity.nnz4Q q24} ≤ 2)"
+  let moeSafe := MarkovL1MoERoutingAndDynamicBits.verifyMoERoutingSafety [(5/2, 1/10), (2/1, 1/10)] [(3/2, 1/10), (1/2, 1/10)]
+  IO.println s!"  MoE Top-2 Routing Invariance   : {moeSafe}"
+  let freivaldsOK := MarkovL1ZeroKnowledgeInferenceCert.verifyMatMulFreivaldsQ [[1/1, 2/1], [3/1, 4/1]] [[2/1, 0/1], [1/1, 2/1]] [[4/1, 4/1], [10/1, 8/1]] [1/1, 3/1]
+  IO.println s!"  O(n²) Freivalds MatMul Cert    : {freivaldsOK}"
 
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
