@@ -17,6 +17,7 @@ import MarkovL1LeechAndLowRank
 import MarkovL1EntropyAndSparsity
 import MarkovL1MoERoutingAndDynamicBits
 import MarkovL1ZeroKnowledgeInferenceCert
+import MarkovL1HCPAndBirkhoffQuantizer
 
 
 
@@ -166,6 +167,11 @@ def runDemo : IO Unit := do
   let freivaldsOK := MarkovL1ZeroKnowledgeInferenceCert.verifyMatMulFreivaldsQ [[1/1, 2/1], [3/1, 4/1]] [[2/1, 0/1], [1/1, 2/1]] [[4/1, 4/1], [10/1, 8/1]] [1/1, 3/1]
   IO.println s!"  O(n²) Freivalds MatMul Cert    : {freivaldsOK}"
 
+  IO.println "\n=== 3HCP Lattice (~1.23 b/w), Register Inversion (Le₀ = 0.024) & Birkhoff–James ℓ₁ ==="
+  let q3hcp := MarkovL1HCPAndBirkhoffQuantizer.quantize3HCPBlockQ (3/1, -3/1, 0/1)
+  IO.println s!"  3HCP Lattice Quantizer (13-pt) : (3, -3, 0) -> {q3hcp}"
+  let bjOrth := MarkovL1HCPAndBirkhoffQuantizer.checkBirkhoffL1OrthogonalQ [2/1, -2/1, 0/1, 0/1] [1/2, 1/2, 1/4, -1/4]
+  IO.println s!"  Birkhoff–James ℓ₁-Orthogonality: {bjOrth}"
 
 /-- Интерактивный запуск дипольного решателя на пользовательском векторе четной длины -/
 def runDipoleCLI (csv : String) : IO Unit := do
