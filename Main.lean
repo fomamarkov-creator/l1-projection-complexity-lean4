@@ -21,7 +21,7 @@ import MarkovL1HCPAndBirkhoffQuantizer
 import MarkovL1FullTransformerCert
 import MarkovL1RoPEAndGolaySyndrome
 import MarkovL1CrossLayerAndIntegerTransformer
-
+import MarkovL1QATConvergence
 
 /-!
 # Main.lean
@@ -202,6 +202,8 @@ def runDemo : IO Unit := do
   IO.println s!"  Rational Spherical Code (R²=2) : valid={sphOK}"
   let y1 := MarkovL1CrossLayerAndIntegerTransformer.invSqrtNewtonStepQ (4/1) (1/2)
   IO.println s!"  Integer-Only RMSNorm 1/√4 Step : y0=1/2 -> y1={y1}"
+
+  IO.println s!"[25] QAT/STE Proximal L1 Contraction: prox(3/4, τ=1/4) = {MarkovL1QATConvergence.proxL1Q (1/4) (3/4)}"
 
 def runDipoleCLI (csv : String) : IO Unit := do
   let tokens := csv.splitOn ","
