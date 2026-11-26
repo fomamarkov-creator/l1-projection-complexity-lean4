@@ -204,10 +204,14 @@ theorem invSqrtNewtonStepQ_residual_identity (S y : ℚ) :
   s!"[Cross-Layer ℓ₁ Compensation] origOut={origOut}, compensatedOut={compOut}, w2Comp={w2Comp}"
 
 #eval
-  let d4Shell : List VecQ := [[1, 1, 0, 0], [1, -1, 0, 0], [0, 1, 1, 0], [0, 0, 1, -1]]
+  let v1 : VecQ := 1 :: 1 :: 0 :: 0 :: []
+  let v2 : VecQ := 1 :: (-1) :: 0 :: 0 :: []
+  let v3 : VecQ := 0 :: 1 :: 1 :: 0 :: []
+  let v4 : VecQ := 0 :: 0 :: 1 :: (-1) :: []
+  let d4Shell : List VecQ := v1 :: v2 :: v3 :: v4 :: []
   let allSph := checkSphericalCodebookQ d4Shell 2
-  let u : VecQ := [1, 1, 0, 0]
-  let c : VecQ := [1, 0, 1, 0]
+  let u : VecQ := 1 :: 1 :: 0 :: 0 :: []
+  let c : VecQ := 1 :: 0 :: 1 :: 0 :: []
   let dotVal := dotListQ u c
   s!"[Rational Spherical Code] allOnSphere(R²=2)={allSph}, dot(u,c)={dotVal}"
 
