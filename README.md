@@ -13,7 +13,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (24 Core Libraries + Standalone CLI)
+## Verified Modules (25 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -118,6 +118,11 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
     - **Rational Spherical Codes (`spherical_chord_dot_identity`, `spherical_code_inner_product_lower_bound`):** Formalizes constant-energy codebooks on rational hyperspheres ($\|c\|_2^2 = R^2$) and proves tight cosine/inner-product lower bounds ($\langle u, c \rangle \ge R^2 - \delta^2 / 2$) for normalized embeddings and KV-cache vectors.
     - **Integer-Only / Float-Free Transformer Primitives (`dyadicExpApproxQ_nonneg`, `invSqrtNewtonStepQ_residual_identity`):** Proves non-negativity of dyadic shift-and-square Softmax approximations $(1 + x / 2^k)^{2^k}$ and exact quadratic Newton-step convergence $1 - S y_{n+1}^2 = e^2 (4 - e) / 4$ for RMSNorm $1/\sqrt{S}$ over exact rationals $\mathbb{Q}$.
     -
+25. **`MarkovL1QATConvergence.lean` (Constructive QAT / STE Convergence & Proximal $\ell_1$ Contraction):**
+    * Formally proves 1-Lipschitz non-expansiveness of the $\ell_1$ proximal soft-thresholding / lattice projection operator (`proxL1Q_nonexpansive` and vector-level `proxL1VecQ_l1_nonexpansive`), preventing gradient explosion during low-bit training from scratch.
+    * Proves zero-anchor fixed-point invariance (`proxL1Q_zero_fixed`) and the exact quadratic Lyapunov descent identity for Straight-Through Estimator (STE) shadow-weight updates (`ste_shadow_weight_descent_identity`).
+    
+
 ---
 
 ## Build & Run
