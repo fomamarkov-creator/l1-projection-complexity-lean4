@@ -300,6 +300,7 @@ theorem fixedPointExpZ_nonneg (xFixed : Int) (kSquarings fracBits : Nat) :
       rw [Int.shiftRight_eq_div_pow]
       exact Int.ediv_nonneg (mul_self_nonneg _) (by positivity)
 
+
 /-- Целочисленный шаг Ньютона в фиксированной точке `Q.F` для `1 / √S`:
     `y_{n+1} = (y_n * (3 * 2^F - ((S * y_n^2) >>> F))) >>> (F + 1)`. -/
 def fixedPointInvSqrtStepZ (SFixed yFixed : Int) (fracBits : Nat) : Int :=
