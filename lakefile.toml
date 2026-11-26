@@ -87,3 +87,6 @@ name = "MarkovL1CrossLayerAndIntegerTransformer"
 
 [[lean_lib]]
 name = "MarkovL1QATConvergence"
+
+[[lean_lib]]
+name = "MarkovL1DyadicVNodeReduction"
