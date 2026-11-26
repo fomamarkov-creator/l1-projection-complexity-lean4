@@ -20,6 +20,8 @@ import MarkovL1ZeroKnowledgeInferenceCert
 import MarkovL1HCPAndBirkhoffQuantizer
 import MarkovL1FullTransformerCert
 import MarkovL1RoPEAndGolaySyndrome
+import MarkovL1CrossLayerAndIntegerTransformer
+
 
 /-!
 # Main.lean
@@ -191,6 +193,15 @@ def runDemo : IO Unit := do
   let synNoisy := MarkovL1RoPEAndGolaySyndrome.syndromeGolay24 (cw ^^^ err)
   let synErr := MarkovL1RoPEAndGolaySyndrome.syndromeGolay24 err
   IO.println s!"  Golay G₂₄ Syndrome Invariance  : clean={synClean}, noisy={synNoisy}, errOnly={synErr}"
+
+  IO.println "\n=== Module 24: Cross-Layer Compensation, Spherical Codes & Integer Transformer ==="
+  let w2Comp := MarkovL1CrossLayerAndIntegerTransformer.crossLayerCompensatedWeightQ (3/4) (1/2) (2/1)
+  IO.println s!"  Cross-Layer Compensated w2'    : {w2Comp} (exact cascade cancellation)"
+  let d4Sph : List MarkovL1CrossLayerAndIntegerTransformer.VecQ := [[1, 1, 0, 0], [1, -1, 0, 0], [0, 0, 1, 1]]
+  let sphOK := MarkovL1CrossLayerAndIntegerTransformer.checkSphericalCodebookQ d4Sph 2
+  IO.println s!"  Rational Spherical Code (R²=2) : valid={sphOK}"
+  let y1 := MarkovL1CrossLayerAndIntegerTransformer.invSqrtNewtonStepQ (4/1) (1/2)
+  IO.println s!"  Integer-Only RMSNorm 1/√4 Step : y0=1/2 -> y1={y1}"
 
 def runDipoleCLI (csv : String) : IO Unit := do
   let tokens := csv.splitOn ","
