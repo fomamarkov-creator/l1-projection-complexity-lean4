@@ -297,7 +297,8 @@ theorem fixedPointExpZ_nonneg (xFixed : Int) (kSquarings fracBits : Nat) :
   | zero => exact hbase
   | succ n ih =>
       simp only [Nat.repeat, fixedPointExpStepZ]
-      exact Int.shiftRight_nonneg (mul_self_nonneg _) _
+      rw [Int.shiftRight_eq_div_pow]
+      exact Int.ediv_nonneg (mul_self_nonneg _) (by positivity)
 
 /-- Целочисленный шаг Ньютона в фиксированной точке `Q.F` для `1 / √S`:
     `y_{n+1} = (y_n * (3 * 2^F - ((S * y_n^2) >>> F))) >>> (F + 1)`. -/
@@ -321,3 +322,6 @@ open MarkovL1CrossLayerAndIntegerTransformer
 #print axioms spherical_code_inner_product_lower_bound
 #print axioms dyadicExpApproxQ_nonneg
 #print axioms invSqrtNewtonStepQ_residual_identity
+#print axioms weighted_kl_logit_drift_bound
+#print axioms radial_angular_poincare_bound
+#print axioms fixedPointExpZ_nonneg
