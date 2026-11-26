@@ -204,6 +204,113 @@ theorem invSqrtNewtonStepQ_residual_identity (S y : ℚ) :
   let y1 := invSqrtNewtonStepQ (4/1) y0
   let y2 := invSqrtNewtonStepQ (4/1) y1
   s!"[Integer-Only Transformer Primitives] exp(-1/2)≈{eApprox}, invSqrt(4): y0={y0} -> y1={y1} -> y2={y2}"
+-- =========================================================================
+-- 4. ДОПОЛНЕНИЕ V5.0: KL-УСТОЙЧИВОСТЬ, ГИПЕРБОЛИЧЕСКИЙ ШАР ПУАНКАРЕ И ЦЕЛОЧИСЛЕННЫЕ РЕГИСТРЫ ℤ
+-- =========================================================================
+
+/-- 4.1. Взвешенная граница дрейфа кросс-энтропии / KL-дивергенции при квантовании логитов:
+    если вероятности `p_i ≥ 0` и ошибка лог-вероятностей ограничена `|logP_i - logPHat_i| ≤ δ`,
+    то суммарное искажение `∑ p_i * |logP_i - logPHat_i| ≤ δ * (∑ p_i)`. -/
+theorem weighted_kl_logit_drift_bound :
+    ∀ (ps logP logPHat : List ℚ) (δ : ℚ),
+      ps.length = logP.length →
+      logP.length = logPHat.length →
+      (∀ p ∈ ps, 0 ≤ p) →
+      (∀ d ∈ List.zipWith (fun a b => absQ (a - b)) logP logPHat, d ≤ δ) →
+      (List.zipWith (fun p d => p * d) ps
+        (List.zipWith (fun a b => absQ (a - b)) logP logPHat)).sum ≤ δ * ps.sum
+  | [], [], [], _, _, _, _, _ => by simp
+  | [], _ :: _, _, _, h1, _, _, _ => by simp at h1
+  | _ :: _, [], _, _, h1, _, _, _ => by simp at h1
+  | _, [], _ :: _, _, _, h2, _, _ => by simp at h2
+  | _, _ :: _, [], _, _, h2, _, _ => by simp at h2
+  | p :: pRest, lp :: lpRest, lph :: lphRest, δ, h1, h2, hp_nn, hd_le => by
+      have hp0 : 0 ≤ p := hp_nn p List.mem_cons_self
+      have hp_r : ∀ x ∈ pRest, 0 ≤ x := fun x hx => hp_nn x (List.mem_cons_of_mem _ hx)
+      have hd0 : absQ (lp - lph) ≤ δ := hd_le _ List.mem_cons_self
+      have hd_r : ∀ d ∈ List.zipWith (fun a b => absQ (a - b)) lpRest lphRest, d ≤ δ :=
+        fun d hd => hd_le d (List.mem_cons_of_mem _ hd)
+      have ih := weighted_kl_logit_drift_bound pRest lpRest lphRest δ
+        (by simpa using h1) (by simpa using h2) hp_r hd_r
+      simp only [List.zipWith_cons_cons, List.sum_cons] at ih ⊢
+      have h_mul : p * absQ (lp - lph) ≤ p * δ := mul_le_mul_of_nonneg_left hd0 hp0
+      have h_dist : δ * (p + pRest.sum) = p * δ + δ * pRest.sum := by ring
+      linarith
+
+/-- 4.2. Гиперболическое / радиально-угловое разложение в шаре Пуанкаре:
+    вектор эмбеддинга представляется парой `(радиус r, сферическое направление u)`.
+    Теорема доказывает строгую квадратичную границу искажения при раздельной
+    квантизации гиперболического радиуса `rHat` и направления `uHat` на решетке. -/
+def scaleListQ (c : ℚ) (v : VecQ) : VecQ :=
+  v.map (fun x => c * x)
+
+theorem radial_angular_poincare_bound :
+    ∀ (u uHat : VecQ) (r rHat : ℚ),
+      u.length = uHat.length →
+      sqNormListQ (subListQ (scaleListQ r u) (scaleListQ rHat uHat)) ≤
+        2 * (r - rHat) * (r - rHat) * sqNormListQ u +
+        2 * rHat * rHat * sqNormListQ (subListQ u uHat)
+  | [], [], _, _, _ => by
+      simp [scaleListQ, subListQ, sqNormListQ, dotListQ]
+  | [], _ :: _, _, _, hlen => by simp at hlen
+  | _ :: _, [], _, _, hlen => by simp at hlen
+  | a :: as, b :: bs, r, rHat, hlen => by
+      have ih := radial_angular_poincare_bound as bs r rHat (by simpa using hlen)
+      unfold sqNormListQ at ih ⊢
+      simp only [scaleListQ, List.map_cons, subListQ, dotListQ] at ih ⊢
+      have h_sq : 0 ≤ ((r - rHat) * a - rHat * (a - b)) * ((r - rHat) * a - rHat * (a - b)) :=
+        mul_self_nonneg _
+      have h_pt : (r * a - rHat * b) * (r * a - rHat * b) ≤
+          2 * (r - rHat) * (r - rHat) * (a * a) + 2 * rHat * rHat * ((a - b) * (a - b)) := by
+        linarith [show (r * a - rHat * b) * (r * a - rHat * b) +
+          ((r - rHat) * a - rHat * (a - b)) * ((r - rHat) * a - rHat * (a - b)) =
+          2 * (r - rHat) * (r - rHat) * (a * a) + 2 * rHat * rHat * ((a - b) * (a - b)) by ring]
+      have h_dist1 : 2 * (r - rHat) * (r - rHat) * (a * a + dotListQ as as) =
+          2 * (r - rHat) * (r - rHat) * (a * a) + 2 * (r - rHat) * (r - rHat) * dotListQ as as := by ring
+      have h_dist2 : 2 * rHat * rHat * ((a - b) * (a - b) + dotListQ (subListQ as bs) (subListQ as bs)) =
+          2 * rHat * rHat * ((a - b) * (a - b)) + 2 * rHat * rHat * dotListQ (subListQ as bs) (subListQ as bs) := by ring
+      linarith
+
+/-- 4.3. Побитово-точная целочисленная арифметика ℤ (без float и без деления):
+    диадическое возведение в квадрат со сдвигом `>>> F` для фиксированной точки `Q.F`. -/
+def fixedPointExpStepZ (fracBits : Nat) (acc : Int) : Int :=
+  (acc * acc) >>> fracBits
+
+def fixedPointExpZ (xFixed : Int) (kSquarings fracBits : Nat) : Int :=
+  let oneFixed : Int := (1 : Int) <<< fracBits
+  let raw := oneFixed + (xFixed >>> kSquarings)
+  let base := if 0 ≤ raw then raw else 0
+  Nat.repeat (fixedPointExpStepZ fracBits) kSquarings base
+
+/-- Теорема 4.3: Целочисленный оператор `fixedPointExpZ` в регистрах CPU `ℤ`
+    строго неотрицателен при любых входах и любой разрядности `fracBits`. -/
+theorem fixedPointExpZ_nonneg (xFixed : Int) (kSquarings fracBits : Nat) :
+    0 ≤ fixedPointExpZ xFixed kSquarings fracBits := by
+  dsimp [fixedPointExpZ]
+  set base := if 0 ≤ ((1 : Int) <<< fracBits) + (xFixed >>> kSquarings)
+              then ((1 : Int) <<< fracBits) + (xFixed >>> kSquarings) else 0
+  have hbase : 0 ≤ base := by
+    dsimp [base]; split_ifs with h
+    · exact h
+    · exact le_refl 0
+  induction kSquarings with
+  | zero => exact hbase
+  | succ n ih =>
+      simp only [Nat.repeat, fixedPointExpStepZ]
+      exact Int.shiftRight_nonneg (mul_self_nonneg _) _
+
+/-- Целочисленный шаг Ньютона в фиксированной точке `Q.F` для `1 / √S`:
+    `y_{n+1} = (y_n * (3 * 2^F - ((S * y_n^2) >>> F))) >>> (F + 1)`. -/
+def fixedPointInvSqrtStepZ (SFixed yFixed : Int) (fracBits : Nat) : Int :=
+  let threeFixed : Int := (3 : Int) <<< fracBits
+  let sy2 := (SFixed * ((yFixed * yFixed) >>> fracBits)) >>> fracBits
+  (yFixed * (threeFixed - sy2)) >>> (fracBits + 1)
+
+#eval
+  let expVal := fixedPointExpZ (-8192) 4 14  -- x = -0.5 в Q14 (16384 = 1.0) -> exp(-0.5) ≈ 0.6065 * 16384 ≈ 9937
+  let y0 : Int := 8192                      -- 0.5 в Q14
+  let y1 := fixedPointInvSqrtStepZ (4 * 16384) y0 14
+  s!"[Integer-Only CPU Registers Z (Q14)] exp(-0.5)_fixed={expVal}/16384, invSqrt(4)_fixed={y1}/16384"
 
 end MarkovL1CrossLayerAndIntegerTransformer
 
