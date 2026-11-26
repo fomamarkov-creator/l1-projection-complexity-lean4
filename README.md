@@ -13,7 +13,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (25 Core Libraries + Standalone CLI)
+## Verified Modules (26 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -122,7 +122,10 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
     * Formally proves 1-Lipschitz non-expansiveness of the $\ell_1$ proximal soft-thresholding / lattice projection operator (`proxL1Q_nonexpansive` and vector-level `proxL1VecQ_l1_nonexpansive`), preventing gradient explosion during low-bit training from scratch.
     * Proves zero-anchor fixed-point invariance (`proxL1Q_zero_fixed`) and the exact quadratic Lyapunov descent identity for Straight-Through Estimator (STE) shadow-weight updates (`ste_shadow_weight_descent_identity`).
     
-
+26. **`MarkovL1DyadicVNodeReduction.lean` (Unbounded Symbolic Dyadic VNode Reduction & Proof-Carrying Certificate):**
+    * Formally proves 2-step Collatz-type dyadic mass contraction `(3 * x + 1) / 4 < x` across unbounded exponent scales (`∀ n > 1, 2^n + 1`, no finite ceiling) and arbitrary symbolic `VNode(base, exp, offset)` blocks satisfying `offset < base * 2^(exp - 2)`.
+    * Defines the dependent proof-carrying certificate `VCoreSymbolicCertificate` (`VCORE-LOGIC-MARKOV-EFIM-2026`), which cannot be instantiated without verified contraction and parity proofs.
+    * 
 ---
 
 ## Build & Run
