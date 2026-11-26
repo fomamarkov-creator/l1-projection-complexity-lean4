@@ -11,8 +11,10 @@ import Mathlib.Tactic.Ring
 * **License:** GNU Affero General Public License v3.0 (AGPLv3)
 * **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
 -/
+
 namespace MarkovL1CrossLayerAndIntegerTransformer
 
+/-- Конструктивный модуль над ℚ без `Classical.choice` -/
 def absQ (x : ℚ) : ℚ :=
   if 0 ≤ x then x else -x
 
@@ -42,6 +44,10 @@ lemma absQ_mul (a b : ℚ) : absQ (a * b) = absQ a * absQ b := by
     have hb' : b < 0 := lt_of_not_ge hb
     have hab : 0 ≤ a * b := mul_nonneg_of_nonpos_of_nonpos (le_of_lt ha') (le_of_lt hb')
     simp [absQ, ha, hb, hab]
+
+-- =========================================================================
+-- 1. МЕЖСЛОЙНАЯ КОМПЕНСАЦИЯ ОШИБКИ (CROSS-LAYER ℓ₁ CURVATURE COMPENSATION)
+-- =========================================================================
 
 def crossLayerCompensatedWeightQ (w1 wHat1 w2 : ℚ) : ℚ :=
   if wHat1 == 0 then w2 else w2 + w2 * ((w1 - wHat1) / wHat1)
@@ -79,6 +85,10 @@ theorem two_layer_cascade_drift_bound (w1 wHat1 w2 wHat2 x ε1 ε2 : ℚ)
       absQ w2 * ε1 + ε2 * absQ wHat1 := by
     linarith
   exact mul_le_mul_of_nonneg_right (le_trans h_tri h_sum) (absQ_nonneg x)
+-- =========================================================================
+-- 2. РАЦИОНАЛЬНЫЕ СФЕРИЧЕСКИЕ КОДЫ ДЛЯ EMBEDDINGS, LM_HEAD И KV-CACHE
+-- =========================================================================
+
 abbrev VecQ := List ℚ
 
 def dotListQ : VecQ → VecQ → ℚ
@@ -100,20 +110,24 @@ def isOnRationalSphereQ (c : VecQ) (radiusSq : ℚ) : Bool :=
 def checkSphericalCodebookQ (codebook : List VecQ) (radiusSq : ℚ) : Bool :=
   codebook.all (fun c => isOnRationalSphereQ c radiusSq)
 
-theorem spherical_chord_dot_identity :
-    ∀ (u v : VecQ),
-      u.length = v.length →
-      sqNormListQ (subListQ u v) =
-        sqNormListQ u + sqNormListQ v - 2 * dotListQ u v
-  | [], [], _ => by simp [sqNormListQ, subListQ, dotListQ]
-  | [], _ :: _, hlen => by simp at hlen
-  | _ :: _, [], hlen => by simp at hlen
-  | a :: as, b :: bs, hlen => by
-      have ih := spherical_chord_dot_identity as bs (by simpa using hlen)
-      unfold sqNormListQ subListQ at ih ⊢
-      simp only [dotListQ] at ih ⊢
-      have h_alg : (a - b) * (a - b) = a * a + b * b - 2 * (a * b) := by ring
-      linarith
+theorem spherical_chord_dot_identity (u v : VecQ) (hlen : u.length = v.length) :
+    sqNormListQ (subListQ u v) = sqNormListQ u + sqNormListQ v - 2 * dotListQ u v := by
+  induction u generalizing v with
+  | nil =>
+      cases v with
+      | nil => simp [sqNormListQ, subListQ, dotListQ]
+      | cons _ _ => simp at hlen
+  | cons a as ih =>
+      cases v with
+      | nil => simp at hlen
+      | cons b bs =>
+          have hsub : as.length = bs.length := by simpa using hlen
+          have hrec := ih bs hsub
+          unfold sqNormListQ at hrec ⊢
+          unfold subListQ
+          simp only [dotListQ]
+          have h_alg : (a - b) * (a - b) = a * a + b * b - 2 * (a * b) := by ring
+          linarith
 
 theorem spherical_code_inner_product_lower_bound (u c : VecQ) (radiusSq deltaSq : ℚ)
     (hlen : u.length = c.length)
@@ -124,6 +138,9 @@ theorem spherical_code_inner_product_lower_bound (u c : VecQ) (radiusSq deltaSq 
   have hid := spherical_chord_dot_identity u c hlen
   rw [hu_sph, hc_sph] at hid
   linarith
+-- =========================================================================
+-- 3. ЦЕЛОЧИСЛЕННЫЕ ПРИМИТИВЫ ТРАНСФОРМЕРА БЕЗ FLOAT (EXP И 1/√S НАД ℚ)
+-- =========================================================================
 
 def dyadicExpApproxQ (x : ℚ) (k : Nat) : ℚ :=
   let pow2 := ((2 : ℚ) ^ k)
@@ -132,11 +149,11 @@ def dyadicExpApproxQ (x : ℚ) (k : Nat) : ℚ :=
 
 lemma repeat_sq_nonneg (k : Nat) (b : ℚ) (hb : 0 ≤ b) :
     0 ≤ Nat.repeat (fun acc => acc * acc) k b := by
-  induction k generalizing b with
+  cases k with
   | zero => exact hb
-  | succ n ih =>
+  | succ n =>
       simp only [Nat.repeat]
-      exact ih (b * b) (mul_self_nonneg b)
+      exact mul_self_nonneg _
 
 theorem dyadicExpApproxQ_nonneg (x : ℚ) (k : Nat) :
     0 ≤ dyadicExpApproxQ x k := by
@@ -151,9 +168,13 @@ def invSqrtNewtonStepQ (S y : ℚ) : ℚ :=
 
 theorem invSqrtNewtonStepQ_residual_identity (S y : ℚ) :
     1 - S * (invSqrtNewtonStepQ S y) * (invSqrtNewtonStepQ S y) =
-      (1 - S * y * y) * (1 - S * y * y) * (4 - (1 - S * y * y)) / 4 := by
+      (1 - S * y * y) * (1 - S * y * y) * (3 + (1 - S * y * y)) / 4 := by
   dsimp [invSqrtNewtonStepQ]
   ring
+
+-- =========================================================================
+-- ИСПОЛНЯЕМЫЕ ТЕСТЫ (#eval) И ПРОВЕРКА АКСИОМАТИЧЕСКОЙ ЧИСТОТЫ
+-- =========================================================================
 
 #eval
   let w1 : ℚ := 3/4
