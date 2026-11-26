@@ -46,13 +46,13 @@ lemma absQ_mul (a b : ℚ) : absQ (a * b) = absQ a * absQ b := by
 def crossLayerCompensatedWeightQ (w1 wHat1 w2 : ℚ) : ℚ :=
   if wHat1 == 0 then w2 else w2 + w2 * ((w1 - wHat1) / wHat1)
 
-theorem cross_layer_exact_cancellation (w1 wHat1 w2 x : ℚ) (h_nz : wHat1 ≠ 0) :
-    (w2 + w2 * ((w1 - wHat1) / wHat1)) * (wHat1 * x) = w2 * (w1 * x) := by
-  have h1 : ((w1 - wHat1) / wHat1) * wHat1 = w1 - wHat1 := div_mul_cancel₀ (w1 - wHat1) h_nz
+theorem cross_layer_exact_cancellation (w1 wHat1 w2 Δw2 x : ℚ)
+    (h_comp : Δw2 * wHat1 = w2 * (w1 - wHat1)) :
+    (w2 + Δw2) * (wHat1 * x) = w2 * (w1 * x) := by
   calc
-    (w2 + w2 * ((w1 - wHat1) / wHat1)) * (wHat1 * x)
-      = (w2 * wHat1 + w2 * (((w1 - wHat1) / wHat1) * wHat1)) * x := by ring
-    _ = (w2 * wHat1 + w2 * (w1 - wHat1)) * x := by rw [h1]
+    (w2 + Δw2) * (wHat1 * x)
+      = (w2 * wHat1 + Δw2 * wHat1) * x := by ring
+    _ = (w2 * wHat1 + w2 * (w1 - wHat1)) * x := by rw [h_comp]
     _ = w2 * (w1 * x) := by ring
 
 theorem two_layer_cascade_drift_bound (w1 wHat1 w2 wHat2 x ε1 ε2 : ℚ)
