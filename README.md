@@ -13,7 +13,7 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
  
 ---
 
-## Verified Modules (23 Core Libraries + Standalone CLI)
+## Verified Modules (24 Core Libraries + Standalone CLI)
 
 1. **`MarkovL1Complexity.lean`:**
    * Formalizes the \(\mathbf{P}\) vs \(\mathbf{NP}\) dichotomy for \(\ell_1\) metric projection null layers \(P_B^{-1}(0)\): proves polynomial-time solvability via blockwise medians for decoupled supports (\(\Delta = 1\)) and geometric `3-SAT` NP-completeness for overlapping supports (\(\Delta \ge 2\)) as well as exponential weight barriers (\(a_i = 2^i\)).
@@ -107,10 +107,17 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
     - **Direct Lattice LUT Kernel Soundness (`lutBlockInference8Q_sound`):** Proves that Shared-Memory / AVX2 lookup-table inference over lattice indices is algebraically identical to full-precision dot products without FP16 unpacking.
     - **Mixed-Lattice Layer Budget Certifier (`verifyMixedLatticePlanQ`):** Guarantees heterogeneous lattice assignment (`Λ₂₄ 0.733b`, `E₈ 0.989b`, `D₄ 1.161b`, `1.58b`) stays within a target average bitrate (`≤ B_target`) and Hölder error budget (`mixed_lattice_plan_certified`).
     - **End-to-End Transformer Block Stability (`transformer_block_e2e_certified_bound`):** Composes sub-1-bit weight drift, 2-bit KV-cache bounds (`ε_K`, `ε_V`), Lipschitz Softmax/RMSNorm/SwiGLU constants, and residual skip connections into a single input-to-output Transformer block guarantee.
-    23. **`MarkovL1RoPEAndGolaySyndrome.lean` (Exact-Rational RoPE Drift & Golay `G₂₄` Syndrome Algebra):**
+  -
+23.
+**`MarkovL1RoPEAndGolaySyndrome.lean` (Exact-Rational RoPE Drift & Golay `G₂₄` Syndrome Algebra):**
     - **Rational Cayley RoPE Isometry & Phase Drift (`rationalCayleyCS_unit`, `rope2D_dot_invariant`, `rope_quantized_key_drift_bound`):** Formalizes Rotary Position Embeddings over exact rationals `ℚ` (`c² + s² = 1` without trigonometric irrationals) and bounds quantized key attention drift (`≤ 2 · ‖kHat - k‖₁ · B_Q`).
     - **Algebraic Golay `G₂₄` Parity-Check & Syndrome Linearity (`golay24_all_codewords_zero_syndrome`, `syndromeBitGF2_xor`):** Machine-verifies `G · Hᵀ = 0 (mod 2)` across all 4,096 codewords and proves `GF(2)` syndrome linearity `S(cw ⊕ err) = S(err)`, certifying `O(1)` syndrome decoding for the 24D Leech lattice `Λ₂₄`.
-
+    -
+  24. **`MarkovL1CrossLayerAndIntegerTransformer.lean` (V-CORE v5.0 Frontier — Cross-Layer Curvature Compensation, Rational Spherical Codes & Integer-Only Transformer Primitives):**
+    - **Cross-Layer $\ell_1$ Curvature Compensation (`cross_layer_exact_cancellation`, `two_layer_cascade_drift_bound`):** Proves that next-layer weight compensation $\Delta w_2$ cancels first-order quantization error from layer $l$ ($w_2' (\hat{w}_1 x) = w_2 (w_1 x)$) and bounds multi-layer cascade drift over $\mathbb{Q}$.
+    - **Rational Spherical Codes (`spherical_chord_dot_identity`, `spherical_code_inner_product_lower_bound`):** Formalizes constant-energy codebooks on rational hyperspheres ($\|c\|_2^2 = R^2$) and proves tight cosine/inner-product lower bounds ($\langle u, c \rangle \ge R^2 - \delta^2 / 2$) for normalized embeddings and KV-cache vectors.
+    - **Integer-Only / Float-Free Transformer Primitives (`dyadicExpApproxQ_nonneg`, `invSqrtNewtonStepQ_residual_identity`):** Proves non-negativity of dyadic shift-and-square Softmax approximations $(1 + x / 2^k)^{2^k}$ and exact quadratic Newton-step convergence $1 - S y_{n+1}^2 = e^2 (4 - e) / 4$ for RMSNorm $1/\sqrt{S}$ over exact rationals $\mathbb{Q}$.
+    -
 ---
 
 ## Build & Run
