@@ -110,7 +110,8 @@ theorem spherical_chord_dot_identity :
   | _ :: _, [], hlen => by simp at hlen
   | a :: as, b :: bs, hlen => by
       have ih := spherical_chord_dot_identity as bs (by simpa using hlen)
-      simp only [sqNormListQ, subListQ, dotListQ] at ih ⊢
+      unfold sqNormListQ subListQ at ih ⊢
+      simp only [dotListQ] at ih ⊢
       have h_alg : (a - b) * (a - b) = a * a + b * b - 2 * (a * b) := by ring
       linarith
 
@@ -123,6 +124,7 @@ theorem spherical_code_inner_product_lower_bound (u c : VecQ) (radiusSq deltaSq 
   have hid := spherical_chord_dot_identity u c hlen
   rw [hu_sph, hc_sph] at hid
   linarith
+
 def dyadicExpApproxQ (x : ℚ) (k : Nat) : ℚ :=
   let pow2 := ((2 : ℚ) ^ k)
   let base := if 0 ≤ 1 + x / pow2 then 1 + x / pow2 else 0
@@ -184,9 +186,10 @@ theorem invSqrtNewtonStepQ_residual_identity (S y : ℚ) :
 
 end MarkovL1CrossLayerAndIntegerTransformer
 
-#print axioms MarkovL1CrossLayerAndIntegerTransformer.cross_layer_exact_cancellation
-#print axioms MarkovL1CrossLayerAndIntegerTransformer.two_layer_cascade_drift_bound
-#print axioms MarkovL1CrossLayerAndIntegerTransformer.spherical_chord_dot_identity
-#print axioms MarkovL1CrossLayerAndIntegerTransformer.spherical_code_inner_product_lower_bound
-#print axioms MarkovL1CrossLayerAndIntegerTransformer.dyadicExpApproxQ_nonneg
-#print axioms MarkovL1CrossLayerAndIntegerTransformer.invSqrtNewtonStepQ_residual_identity
+open MarkovL1CrossLayerAndIntegerTransformer
+#print axioms cross_layer_exact_cancellation
+#print axioms two_layer_cascade_drift_bound
+#print axioms spherical_chord_dot_identity
+#print axioms spherical_code_inner_product_lower_bound
+#print axioms dyadicExpApproxQ_nonneg
+#print axioms invSqrtNewtonStepQ_residual_identity
