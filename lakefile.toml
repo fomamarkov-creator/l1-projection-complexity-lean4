@@ -81,3 +81,6 @@ name = "MarkovL1FullTransformerCert"
 
 [[lean_lib]]
 name = "MarkovL1RoPEAndGolaySyndrome"
+
+[[lean_lib]]
+name = "MarkovL1CrossLayerAndIntegerTransformer"
