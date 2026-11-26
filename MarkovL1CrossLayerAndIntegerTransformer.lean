@@ -1,7 +1,6 @@
 import Mathlib.Data.Rat.Lemmas
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import Mathlib.Tactic.FieldSimp
 
 /-!
 # V-CORE v5.0 Frontier Module 24: Cross-Layer ℓ₁ Curvature Compensation, Rational Spherical Codes & Integer-Only Transformer Primitives
@@ -12,10 +11,8 @@ import Mathlib.Tactic.FieldSimp
 * **License:** GNU Affero General Public License v3.0 (AGPLv3)
 * **Toolchain:** Lean `v4.37.0-rc1` / Mathlib
 -/
-
 namespace MarkovL1CrossLayerAndIntegerTransformer
 
-/-- Конструктивный модуль над ℚ без `Classical.choice` -/
 def absQ (x : ℚ) : ℚ :=
   if 0 ≤ x then x else -x
 
@@ -46,20 +43,18 @@ lemma absQ_mul (a b : ℚ) : absQ (a * b) = absQ a * absQ b := by
     have hab : 0 ≤ a * b := mul_nonneg_of_nonpos_of_nonpos (le_of_lt ha') (le_of_lt hb')
     simp [absQ, ha, hb, hab]
 
--- =========================================================================
--- 1. МЕЖСЛОЙНАЯ КОМПЕНСАЦИЯ ОШИБКИ (CROSS-LAYER ℓ₁ CURVATURE COMPENSATION)
--- =========================================================================
-
 def crossLayerCompensatedWeightQ (w1 wHat1 w2 : ℚ) : ℚ :=
   if wHat1 == 0 then w2 else w2 + w2 * ((w1 - wHat1) / wHat1)
 
-/-- Теорема 1.1 (Точное межслойное подавление ошибки квантования каскада двух слоёв) -/
 theorem cross_layer_exact_cancellation (w1 wHat1 w2 x : ℚ) (h_nz : wHat1 ≠ 0) :
     (w2 + w2 * ((w1 - wHat1) / wHat1)) * (wHat1 * x) = w2 * (w1 * x) := by
-  field_simp
-  ring
+  have h1 : ((w1 - wHat1) / wHat1) * wHat1 = w1 - wHat1 := div_mul_cancel₀ (w1 - wHat1) h_nz
+  calc
+    (w2 + w2 * ((w1 - wHat1) / wHat1)) * (wHat1 * x)
+      = (w2 * wHat1 + w2 * (((w1 - wHat1) / wHat1) * wHat1)) * x := by ring
+    _ = (w2 * wHat1 + w2 * (w1 - wHat1)) * x := by rw [h1]
+    _ = w2 * (w1 * x) := by ring
 
-/-- Теорема 1.2 (Граница межслойного дрейфа двухслойного каскада) -/
 theorem two_layer_cascade_drift_bound (w1 wHat1 w2 wHat2 x ε1 ε2 : ℚ)
     (he1 : absQ (wHat1 - w1) ≤ ε1)
     (he2 : absQ (wHat2 - w2) ≤ ε2) :
@@ -84,20 +79,20 @@ theorem two_layer_cascade_drift_bound (w1 wHat1 w2 wHat2 x ε1 ε2 : ℚ)
       absQ w2 * ε1 + ε2 * absQ wHat1 := by
     linarith
   exact mul_le_mul_of_nonneg_right (le_trans h_tri h_sum) (absQ_nonneg x)
--- =========================================================================
--- 2. РАЦИОНАЛЬНЫЕ СФЕРИЧЕСКИЕ КОДЫ ДЛЯ EMBEDDINGS, LM_HEAD И KV-CACHE
--- =========================================================================
-
 abbrev VecQ := List ℚ
 
-def dotListQ (u v : VecQ) : ℚ :=
-  (List.zipWith (· * ·) u v).sum
+def dotListQ : VecQ → VecQ → ℚ
+  | [], _ => 0
+  | _, [] => 0
+  | a :: as, b :: bs => a * b + dotListQ as bs
 
 def sqNormListQ (v : VecQ) : ℚ :=
   dotListQ v v
 
-def l1NormListQ (v : VecQ) : ℚ :=
-  (v.map absQ).sum
+def subListQ : VecQ → VecQ → VecQ
+  | [], _ => []
+  | _, [] => []
+  | a :: as, b :: bs => (a - b) :: subListQ as bs
 
 def isOnRationalSphereQ (c : VecQ) (radiusSq : ℚ) : Bool :=
   decide (sqNormListQ c = radiusSq)
@@ -105,36 +100,29 @@ def isOnRationalSphereQ (c : VecQ) (radiusSq : ℚ) : Bool :=
 def checkSphericalCodebookQ (codebook : List VecQ) (radiusSq : ℚ) : Bool :=
   codebook.all (fun c => isOnRationalSphereQ c radiusSq)
 
-/-- Теорема 2.1 (Тождество скалярного произведения на рациональной гиперсфере) -/
 theorem spherical_chord_dot_identity :
     ∀ (u v : VecQ),
       u.length = v.length →
-      sqNormListQ (List.zipWith (· - ·) u v) =
+      sqNormListQ (subListQ u v) =
         sqNormListQ u + sqNormListQ v - 2 * dotListQ u v
-  | [], [], _ => by simp [sqNormListQ, dotListQ]
+  | [], [], _ => by simp [sqNormListQ, subListQ, dotListQ]
   | [], _ :: _, hlen => by simp at hlen
   | _ :: _, [], hlen => by simp at hlen
   | a :: as, b :: bs, hlen => by
       have ih := spherical_chord_dot_identity as bs (by simpa using hlen)
-      unfold sqNormListQ dotListQ at ih ⊢
-      simp only [List.zipWith, List.sum_cons] at ih ⊢
+      simp only [sqNormListQ, subListQ, dotListQ] at ih ⊢
       have h_alg : (a - b) * (a - b) = a * a + b * b - 2 * (a * b) := by ring
       linarith
 
-/-- Теорема 2.2 (Гарантированное сохранение скалярного произведения при сферическом квантовании) -/
 theorem spherical_code_inner_product_lower_bound (u c : VecQ) (radiusSq deltaSq : ℚ)
     (hlen : u.length = c.length)
     (hu_sph : sqNormListQ u = radiusSq)
     (hc_sph : sqNormListQ c = radiusSq)
-    (h_chord : sqNormListQ (List.zipWith (· - ·) u c) ≤ deltaSq) :
+    (h_chord : sqNormListQ (subListQ u c) ≤ deltaSq) :
     radiusSq - deltaSq / 2 ≤ dotListQ u c := by
   have hid := spherical_chord_dot_identity u c hlen
   rw [hu_sph, hc_sph] at hid
   linarith
--- =========================================================================
--- 3. ЦЕЛОЧИСЛЕННЫЕ ПРИМИТИВЫ ТРАНСФОРМЕРА БЕЗ FLOAT (EXP И 1/√S НАД ℚ)
--- =========================================================================
-
 def dyadicExpApproxQ (x : ℚ) (k : Nat) : ℚ :=
   let pow2 := ((2 : ℚ) ^ k)
   let base := if 0 ≤ 1 + x / pow2 then 1 + x / pow2 else 0
@@ -148,7 +136,6 @@ lemma repeat_sq_nonneg (k : Nat) (b : ℚ) (hb : 0 ≤ b) :
       simp only [Nat.repeat]
       exact ih (b * b) (mul_self_nonneg b)
 
-/-- Теорема 3.1 (Строгая неотрицательность и корректность весов Softmax без `float`) -/
 theorem dyadicExpApproxQ_nonneg (x : ℚ) (k : Nat) :
     0 ≤ dyadicExpApproxQ x k := by
   dsimp [dyadicExpApproxQ]
@@ -160,16 +147,11 @@ theorem dyadicExpApproxQ_nonneg (x : ℚ) (k : Nat) :
 def invSqrtNewtonStepQ (S y : ℚ) : ℚ :=
   y * (3 - S * y * y) / 2
 
-/-- Теорема 3.2 (Точное алгебраическое тождество сходимости метода Ньютона для RMSNorm) -/
 theorem invSqrtNewtonStepQ_residual_identity (S y : ℚ) :
     1 - S * (invSqrtNewtonStepQ S y) * (invSqrtNewtonStepQ S y) =
       (1 - S * y * y) * (1 - S * y * y) * (4 - (1 - S * y * y)) / 4 := by
   dsimp [invSqrtNewtonStepQ]
   ring
-
--- =========================================================================
--- ИСПОЛНЯЕМЫЕ ТЕСТЫ (#eval) И ПРОВЕРКА АКСИОМАТИЧЕСКОЙ ЧИСТОТЫ
--- =========================================================================
 
 #eval
   let w1 : ℚ := 3/4
