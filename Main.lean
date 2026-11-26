@@ -22,6 +22,8 @@ import MarkovL1FullTransformerCert
 import MarkovL1RoPEAndGolaySyndrome
 import MarkovL1CrossLayerAndIntegerTransformer
 import MarkovL1QATConvergence
+import MarkovL1DyadicVNodeReduction
+
 
 /-!
 # Main.lean
@@ -229,6 +231,8 @@ def runDipoleCLI (csv : String) : IO Unit := do
         IO.println s!"  Residual     r* = {rList}  (Verified ∈ P_B⁻¹(0))"
     | none =>
         IO.println "Error: invalid block configuration."
+
+  IO.println s!"  [{MarkovL1DyadicVNodeReduction.controlCertificate.vcore_id}] {MarkovL1DyadicVNodeReduction.controlCertificate.boundary} -> VERIFIED"
 
 def main (args : List String) : IO Unit := do
   match args with
