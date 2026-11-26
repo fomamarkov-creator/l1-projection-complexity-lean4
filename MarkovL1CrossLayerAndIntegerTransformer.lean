@@ -50,23 +50,16 @@ lemma absQ_mul (a b : ℚ) : absQ (a * b) = absQ a * absQ b := by
 -- 1. МЕЖСЛОЙНАЯ КОМПЕНСАЦИЯ ОШИБКИ (CROSS-LAYER ℓ₁ CURVATURE COMPENSATION)
 -- =========================================================================
 
-/-- Межслойная компенсационная поправка весов `w₂` следующего слоя `l+1`:
-    если слой `l` имеет ошибку `e₁ = w₁ - wHat₁` и ненулевой квантованный отклик `yHat₁`,
-    поправка `Δw₂ = w₂ * (e₁ / wHat₁)` восстанавливает точный выход каскада `w₂ * (w₁ * x)`. -/
 def crossLayerCompensatedWeightQ (w1 wHat1 w2 : ℚ) : ℚ :=
   if wHat1 == 0 then w2 else w2 + w2 * ((w1 - wHat1) / wHat1)
 
-/-- Теорема 1.1 (Точное межслойное подавление ошибки квантования каскада двух слоёв):
-    при `wHat1 ≠ 0` скорректированный вес `w2Comp` следующего слоя полностью аннулирует
-    ошибку квантования предыдущего слоя: `w2Comp * (wHat1 * x) = w2 * (w1 * x)`. -/
+/-- Теорема 1.1 (Точное межслойное подавление ошибки квантования каскада двух слоёв) -/
 theorem cross_layer_exact_cancellation (w1 wHat1 w2 x : ℚ) (h_nz : wHat1 ≠ 0) :
     (w2 + w2 * ((w1 - wHat1) / wHat1)) * (wHat1 * x) = w2 * (w1 * x) := by
-  field_simp [h_nz]
+  field_simp
   ring
 
-/-- Теорема 1.2 (Граница межслойного дрейфа с учётом остаточной невязки `δ_res` после ℓ₁-LoRA):
-    если слой `l` квантован с ошибкой `|wHat1 - w1| ≤ ε₁`, а слой `l+1` имеет ошибку `|wHat2 - w2| ≤ ε₂`,
-    то выходной дрейф двухслойного каскада ограничен `|w2 * w1 * x - wHat2 * wHat1 * x| ≤ (|w2| * ε₁ + ε₂ * |wHat1|) * |x|`. -/
+/-- Теорема 1.2 (Граница межслойного дрейфа двухслойного каскада) -/
 theorem two_layer_cascade_drift_bound (w1 wHat1 w2 wHat2 x ε1 ε2 : ℚ)
     (he1 : absQ (wHat1 - w1) ≤ ε1)
     (he2 : absQ (wHat2 - w2) ≤ ε2) :
@@ -106,17 +99,13 @@ def sqNormListQ (v : VecQ) : ℚ :=
 def l1NormListQ (v : VecQ) : ℚ :=
   (v.map absQ).sum
 
-/-- Предикат принадлежности кодового слова рациональной гиперсфере радиуса `R` (`‖c‖₂² = R²`) -/
 def isOnRationalSphereQ (c : VecQ) (radiusSq : ℚ) : Bool :=
   decide (sqNormListQ c = radiusSq)
 
-/-- Вычислимая проверка сферической кодовой книги (все кодовые слова лежат на одной гиперсфере `R²`) -/
 def checkSphericalCodebookQ (codebook : List VecQ) (radiusSq : ℚ) : Bool :=
   codebook.all (fun c => isOnRationalSphereQ c radiusSq)
 
-/-- Теорема 2.1 (Тождество скалярного произведения на рациональной гиперсфере):
-    для любых двух векторов `u, v` одинаковой длины выполняется
-    `‖u - v‖₂² = ‖u‖₂² + ‖v‖₂² - 2 ⟨u, v⟩`. -/
+/-- Теорема 2.1 (Тождество скалярного произведения на рациональной гиперсфере) -/
 theorem spherical_chord_dot_identity :
     ∀ (u v : VecQ),
       u.length = v.length →
@@ -127,15 +116,12 @@ theorem spherical_chord_dot_identity :
   | _ :: _, [], hlen => by simp at hlen
   | a :: as, b :: bs, hlen => by
       have ih := spherical_chord_dot_identity as bs (by simpa using hlen)
-      dsimp [sqNormListQ, dotListQ, List.zipWith] at ih ⊢
-      simp only [List.sum_cons] at ih ⊢
+      unfold sqNormListQ dotListQ at ih ⊢
+      simp only [List.zipWith, List.sum_cons] at ih ⊢
       have h_alg : (a - b) * (a - b) = a * a + b * b - 2 * (a * b) := by ring
       linarith
 
-/-- Теорема 2.2 (Гарантированное сохранение скалярного произведения при сферическом квантовании):
-    если исходный нормализованный эмбеддинг `u` и кодовое слово `c` лежат на одной
-    рациональной сфере (`‖u‖₂² = R²`, `‖c‖₂² = R²`), а квадрат хорды `‖u - c‖₂² ≤ δ²`,
-    то косинусное сходство / скалярное произведение удовлетворяет `⟨u, c⟩ ≥ R² - δ² / 2`. -/
+/-- Теорема 2.2 (Гарантированное сохранение скалярного произведения при сферическом квантовании) -/
 theorem spherical_code_inner_product_lower_bound (u c : VecQ) (radiusSq deltaSq : ℚ)
     (hlen : u.length = c.length)
     (hu_sph : sqNormListQ u = radiusSq)
@@ -149,8 +135,6 @@ theorem spherical_code_inner_product_lower_bound (u c : VecQ) (radiusSq deltaSq 
 -- 3. ЦЕЛОЧИСЛЕННЫЕ ПРИМИТИВЫ ТРАНСФОРМЕРА БЕЗ FLOAT (EXP И 1/√S НАД ℚ)
 -- =========================================================================
 
-/-- Целочисленно-двоичная аппроксимация экспоненты для Softmax без чисел с плавающей точкой:
-    вычисляет `(max(0, 1 + x / 2^k))^(2^k)` над точными рациональными ℚ (только сдвиги и квадраты). -/
 def dyadicExpApproxQ (x : ℚ) (k : Nat) : ℚ :=
   let pow2 := ((2 : ℚ) ^ k)
   let base := if 0 ≤ 1 + x / pow2 then 1 + x / pow2 else 0
@@ -164,9 +148,7 @@ lemma repeat_sq_nonneg (k : Nat) (b : ℚ) (hb : 0 ≤ b) :
       simp only [Nat.repeat]
       exact ih (b * b) (mul_self_nonneg b)
 
-/-- Теорема 3.1 (Строгая неотрицательность и корректность весов Softmax без `float`):
-    для любого рационального логита `x ∈ ℚ` и глубины возведения в квадрат `k`,
-    `dyadicExpApproxQ x k ≥ 0`. -/
+/-- Теорема 3.1 (Строгая неотрицательность и корректность весов Softmax без `float`) -/
 theorem dyadicExpApproxQ_nonneg (x : ℚ) (k : Nat) :
     0 ≤ dyadicExpApproxQ x k := by
   dsimp [dyadicExpApproxQ]
@@ -175,14 +157,10 @@ theorem dyadicExpApproxQ_nonneg (x : ℚ) (k : Nat) :
   · exact h
   · exact le_refl 0
 
-/-- Один шаг бесплуючей итерации Ньютона для `1 / √S` в RMSNorm:
-    `y_{n+1} = y_n * (3 - S * y_n²) / 2`. -/
 def invSqrtNewtonStepQ (S y : ℚ) : ℚ :=
   y * (3 - S * y * y) / 2
 
-/-- Теорема 3.2 (Точное алгебраическое тождество сходимости метода Ньютона для RMSNorm):
-    невязка `1 - S * y_{n+1}²` выражается через квадрат предыдущей невязки `e = 1 - S * y_n²`
-    по точной формуле `1 - S * y_{n+1}² = e² * (4 - e) / 4` (квадратичная сходимость над ℚ!). -/
+/-- Теорема 3.2 (Точное алгебраическое тождество сходимости метода Ньютона для RMSNorm) -/
 theorem invSqrtNewtonStepQ_residual_identity (S y : ℚ) :
     1 - S * (invSqrtNewtonStepQ S y) * (invSqrtNewtonStepQ S y) =
       (1 - S * y * y) * (1 - S * y * y) * (4 - (1 - S * y * y)) / 4 := by
