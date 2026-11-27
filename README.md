@@ -126,7 +126,12 @@ Machine-checked formalization (`0 sorry`s) of \(\mathbf{P}\) vs \(\mathbf{NP}\) 
     * Formally proves 2-step Collatz-type dyadic mass contraction `(3 * x + 1) / 4 < x` across unbounded exponent scales (`∀ n > 1, 2^n + 1`, no finite ceiling) and arbitrary symbolic `VNode(base, exp, offset)` blocks satisfying `offset < base * 2^(exp - 2)`.
     * Defines the dependent proof-carrying certificate `VCoreSymbolicCertificate` (`VCORE-LOGIC-MARKOV-EFIM-2026`), which cannot be instantiated without verified contraction and parity proofs.
     * 
-27. **"MarkovL1V256Upgrades.lean"**
+27. **MarkovL1V256Upgrades.lean (V-CORE v8.0 V256 Algorithmic & Hardware-Aware Upgrades):**
+    - **KV-Cache Electrical Lock (`kvCacheElectricalLock_zero_drift`):** Formalizes zero-drift attention KV-cache phase locking anchored at the exact rational leeway invariant $Le_0 = \frac{256}{250} - 1 = \frac{3}{125} = 0.024$.
+    - **12-Point `3HCP` Coordination Filter & Pore Criterion ($\Omega_{\text{pore}} = 1$):** Replaces brute-force search with a 12-neighbor hexagonal close-packed directional filter and proves exact pore-saturation stability for outlier isolation.
+    - **Analytical $O(1)$ 2:4 Sparsity Lock Threshold (`125/192`):** Proves closed-form combinatorial mask selection for hardware 2:4 structured sparsity without exhaustive $\binom{4}{2}$ enumeration.
+    - **Anisotropic $11\times$ MoE Routing Step & Modular $\mathbb{Z}/256\mathbb{Z}$ QAT Reset:** Certifies $11\times$ directional margin separation for Mixture-of-Experts routing and bounded modular wrap-around stability for Quantization-Aware Training (`VCORE-V256-UPGRADES-MARKOV-EFIM-2026`).
+
     
 
 ---
