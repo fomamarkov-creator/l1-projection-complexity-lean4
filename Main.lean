@@ -234,6 +234,9 @@ def runDipoleCLI (csv : String) : IO Unit := do
 
   IO.println s!"  [{MarkovL1DyadicVNodeReduction.controlCertificate.vcore_id}] {MarkovL1DyadicVNodeReduction.controlCertificate.boundary} -> VERIFIED"
 
+  let cert27 := MarkovL1V256.buildVerifiedV256Certificate
+  IO.println s!"[CERT-27] {cert27.stamp} | Le0 = 3/125 | LockThresh = 125/192"
+
 def main (args : List String) : IO Unit := do
   match args with
 
