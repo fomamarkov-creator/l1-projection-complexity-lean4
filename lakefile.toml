@@ -92,4 +92,4 @@ name = "MarkovL1QATConvergence"
 name = "MarkovL1DyadicVNodeReduction"
 
 [[lean_lib]]
-nane = "MarkovL1V256Upgrades.lean"
+name = "MarkovL1V256Upgrades"
